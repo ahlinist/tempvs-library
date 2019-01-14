@@ -10,6 +10,11 @@ buildscript {
 	}
 }
 
+plugins {
+	id 'net.ltgt.apt' version '0.10'
+	id 'org.liquibase.gradle' version '2.0.1'
+}
+
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
@@ -17,6 +22,11 @@ apply plugin: 'io.spring.dependency-management'
 group = 'club.tempvs'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
+
+configurations {
+	integrationTestCompile.extendsFrom testCompile
+	integrationTestRuntime.extendsFrom testRuntime
+}
 
 repositories {
 	mavenCentral()
@@ -28,14 +38,88 @@ ext {
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation "org.postgresql:postgresql:${postgresVersion}"
+	implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
+	implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+	//lombok
+	compileOnly 'org.projectlombok:lombok:1.18.4'
+	apt 'org.projectlombok:lombok:1.18.4'
+	//testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.mockito:mockito-core:2.18.3'
+	integrationTestRuntime 'com.h2database:h2:1.4.194'
+	testRuntime 'com.h2database:h2:1.4.194'
+	//liquibase
+	liquibaseRuntime "org.liquibase:liquibase-core:${liquibaseVersion}"
+	liquibaseRuntime "org.postgresql:postgresql:${postgresVersion}"
+	liquibaseRuntime 'org.liquibase.ext:liquibase-hibernate5:3.6'
 }
 
 dependencyManagement {
 	imports {
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
 	}
+}
+
+
+bootJar {
+	baseName = 'tempvs-message'
+	version =  project.version
+}
+
+sourceSets {
+	integrationTest {
+		java {
+			compileClasspath += main.output + test.output
+			runtimeClasspath += main.output + test.output
+			srcDir file('src/integration-test/java')
+		}
+
+		resources.srcDir file('src/integration-test/resources')
+	}
+}
+
+task integrationTest(type: Test) {
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+task stage() {
+	dependsOn build
+}
+
+task liquibaseDiffChangelog(type: JavaExec) {
+	group = "liquibase"
+
+	classpath sourceSets.main.runtimeClasspath
+	classpath configurations.liquibaseRuntime
+	main = "liquibase.integration.commandline.Main"
+
+	args "--changeLogFile=" + 'src/main/resources/db/changelog/changes/' + System.getenv('LIQUIBASE_DIFF_FILENAME')
+	args "--referenceUrl=" + 'hibernate:spring:club.tempvs.message.domain?dialect=org.hibernate.dialect.PostgreSQL95Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy'
+	args "--username=" + System.getenv('JDBC_DATABASE_USERNAME')
+	args "--password=" + System.getenv('JDBC_DATABASE_PASSWORD')
+	args "--url=" + System.getenv('JDBC_DATABASE_URL')
+	args "--driver=org.postgresql.Driver"
+	args "diffChangeLog"
+}
+
+task liquibaseGenerateChangeLog(type: JavaExec) {
+	group = "liquibase"
+
+	classpath sourceSets.main.runtimeClasspath
+	classpath configurations.liquibaseRuntime
+	main = "liquibase.integration.commandline.Main"
+
+	args "--changeLogFile=" + 'src/main/resources/db/changelog/db.changelog-master.yaml'
+	args "--referenceUrl=" + 'hibernate:spring:club.tempvs.message.domain?dialect=org.hibernate.dialect.PostgreSQL95Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy'
+	args "--username=" + System.getenv('JDBC_DATABASE_USERNAME')
+	args "--password=" + System.getenv('JDBC_DATABASE_PASSWORD')
+	args "--url=" + System.getenv('JDBC_DATABASE_URL')
+	args "--driver=org.postgresql.Driver"
+	args "generateChangeLog"
 }
