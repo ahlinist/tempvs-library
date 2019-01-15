@@ -13,6 +13,8 @@ public class RoleRequest {
     @Id
     @GeneratedValue
     private Long id;
+
     private Long userId;
+
     private Role role;
 }

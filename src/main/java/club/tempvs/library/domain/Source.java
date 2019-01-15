@@ -2,26 +2,41 @@ package club.tempvs.library.domain;
 
 import lombok.Data;
 import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Source {
 
     @Id
     @GeneratedValue
     private Long id;
+
     private String name;
+
     private String description;
+
     private Classification classification;
+
     private Type type;
+
     private Period period;
-    private List<String> images;
-    private List<Long> comments;
+
+    @ElementCollection
+    private List<String> images = new ArrayList<>();
+
+    @ElementCollection
+    private List<Long> comments = new ArrayList<>();
+
+    @CreatedDate
+    private Instant createdDate;
 
     public enum Classification {
 
