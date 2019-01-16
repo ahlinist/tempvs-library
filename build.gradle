@@ -24,7 +24,7 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
 configurations {
-	integrationTestCompile.extendsFrom testCompile
+	integrationTestImplementation.extendsFrom testImplementation
 	integrationTestRuntime.extendsFrom testRuntime
 }
 
@@ -50,8 +50,8 @@ dependencies {
 	apt 'org.projectlombok:lombok:1.18.4'
 	//testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'junit:junit:4.12'
 	testImplementation 'org.mockito:mockito-core:2.18.3'
-	integrationTestRuntime 'com.h2database:h2:1.4.194'
 	testRuntime 'com.h2database:h2:1.4.194'
 	//liquibase
 	liquibaseRuntime "org.liquibase:liquibase-core:${liquibaseVersion}"
