@@ -67,7 +67,7 @@ dependencyManagement {
 
 
 bootJar {
-	baseName = 'tempvs-message'
+	baseName = 'tempvs-library'
 	version =  project.version
 }
 
