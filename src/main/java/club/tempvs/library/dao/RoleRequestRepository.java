@@ -1,4 +1,4 @@
-package club.tempvs.library;
+package club.tempvs.library.dao;
 
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.RoleRequest;

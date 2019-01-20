@@ -1,6 +1,6 @@
 package club.tempvs.library.service.impl;
 
-import club.tempvs.library.RoleRequestRepository;
+import club.tempvs.library.dao.RoleRequestRepository;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.RoleRequest;
 import club.tempvs.library.service.RoleRequestService;
