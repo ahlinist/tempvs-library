@@ -3,10 +3,13 @@ package club.tempvs.library.controller;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import club.tempvs.library.domain.RoleRequest;
+import club.tempvs.library.model.Role;
 import club.tempvs.library.model.User;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.service.LibraryService;
+import club.tempvs.library.service.RoleRequestService;
 import club.tempvs.library.util.AuthHelper;
 import club.tempvs.library.util.UserConverter;
 import org.junit.Before;
@@ -39,11 +42,17 @@ public class LibraryControllerTest {
     private LibraryService libraryService;
 
     @Mock
+    private RoleRequestService roleRequestService;
+
+    @Mock
     private WelcomePageDto welcomePageDto;
+
+    @Mock
+    private RoleRequest roleRequest;
 
     @Before
     public void setup() {
-        libraryController = new LibraryController(userConverter, libraryService, authHelper);
+        libraryController = new LibraryController(authHelper, userConverter, libraryService, roleRequestService);
     }
 
     @Test
@@ -66,6 +75,25 @@ public class LibraryControllerTest {
         verify(userConverter).convert(userInfoDto);
         verify(libraryService).getWelcomePage(user);
         verifyNoMoreInteractions(userConverter, libraryService);
+
+        WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
+        assertEquals("The result is a role request", welcomePageDto, resultDto);
+        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+    }
+
+    @Test
+    public void testRequestRole() {
+        Role role = Role.ROLE_CONTRIBUTOR;
+
+        when(userConverter.convert(userInfoDto)).thenReturn(user);
+        when(roleRequestService.createRoleRequest(user, role)).thenReturn(roleRequest);
+        when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
+
+        ResponseEntity result = libraryController.requestRole(userInfoDto, TOKEN, role);
+
+        verify(roleRequestService).createRoleRequest(user, role);
+        verify(libraryService).getWelcomePage(user);
+        verifyNoMoreInteractions(libraryService, roleRequestService);
 
         WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
         assertEquals("The result is a role request", welcomePageDto, resultDto);

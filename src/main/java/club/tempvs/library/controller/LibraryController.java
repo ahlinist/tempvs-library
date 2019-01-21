@@ -1,10 +1,12 @@
 package club.tempvs.library.controller;
 
 import club.tempvs.library.api.UnauthorizedException;
+import club.tempvs.library.model.Role;
 import club.tempvs.library.model.User;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.service.LibraryService;
+import club.tempvs.library.service.RoleRequestService;
 import club.tempvs.library.util.AuthHelper;
 import club.tempvs.library.util.UserConverter;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
@@ -28,9 +30,10 @@ public class LibraryController {
     private static final String USER_INFO_HEADER = "User-Info";
     private static final String AUTHORIZATION_HEADER = "Authorization";
 
+    private final AuthHelper authHelper;
     private final UserConverter userConverter;
     private final LibraryService libraryService;
-    private final AuthHelper authHelper;
+    private final RoleRequestService roleRequestService;
 
     @GetMapping("/ping")
     public String getPong() {
@@ -39,10 +42,22 @@ public class LibraryController {
 
     @GetMapping("/library")
     public ResponseEntity getWelcomePage(
-            @RequestHeader(value = USER_INFO_HEADER) UserInfoDto userInfoDto,
+            @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
             @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String token) {
         authHelper.authenticate(token);
         User user = userConverter.convert(userInfoDto);
+        WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
+        return ResponseEntity.ok(welcomePageDto);
+    }
+
+    @PostMapping("/library/role/{role}")
+    public ResponseEntity requestRole(
+            @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
+            @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String token,
+            @PathVariable("role") Role role) {
+        authHelper.authenticate(token);
+        User user = userConverter.convert(userInfoDto);
+        roleRequestService.createRoleRequest(user, role);
         WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
         return ResponseEntity.ok(welcomePageDto);
     }

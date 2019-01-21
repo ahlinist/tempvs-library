@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
@@ -62,6 +62,24 @@ public class LibraryControllerIntegrationTest {
                     .andExpect(jsonPath("adminPanelAvailable", is(false)))
                     .andExpect(jsonPath("role", is(Role.ROLE_CONTRIBUTOR.toString())))
                     .andExpect(jsonPath("roleRequest", is(true)));
+    }
+
+    @Test
+    public void testRequestRole() throws Exception {
+        Long userId = 1L;
+        String userInfoValue = buildUserInfoValue(userId);
+        String role = Role.ROLE_CONTRIBUTOR.toString();
+
+        mvc.perform(post("/api/library/role/" + role)
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                    .andExpect(jsonPath("greeting", is(containsString("Greetings in the Library!"))))
+                    .andExpect(jsonPath("buttonText", is("Cancel Contributor request")))
+                    .andExpect(jsonPath("adminPanelAvailable", is(false)))
+                    .andExpect(jsonPath("role", is(Role.ROLE_CONTRIBUTOR.toString())))
+                    .andExpect(jsonPath("roleRequest", is(false)));
     }
 
     private String buildUserInfoValue(Long profileId) throws Exception {

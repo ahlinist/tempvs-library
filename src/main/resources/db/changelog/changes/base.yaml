@@ -1,0 +1,119 @@
+databaseChangeLog:
+- changeSet:
+    id: 1548106818142-1
+    author: albvs (generated)
+    changes:
+    - createSequence:
+        sequenceName: hibernate_sequence
+- changeSet:
+    id: 1548106818142-2
+    author: albvs (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              primaryKey: true
+              primaryKeyName: role_requestPK
+            name: id
+            type: BIGINT
+        - column:
+            name: created_date
+            type: TIMESTAMP WITHOUT TIME ZONE
+        - column:
+            name: role
+            type: INTEGER
+        - column:
+            name: user_id
+            type: BIGINT
+        tableName: role_request
+- changeSet:
+    id: 1548106818142-3
+    author: albvs (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              primaryKey: true
+              primaryKeyName: sourcePK
+            name: id
+            type: BIGINT
+        - column:
+            name: classification
+            type: INTEGER
+        - column:
+            name: created_date
+            type: TIMESTAMP WITHOUT TIME ZONE
+        - column:
+            name: description
+            type: VARCHAR(255)
+        - column:
+            name: name
+            type: VARCHAR(255)
+        - column:
+            name: period
+            type: INTEGER
+        - column:
+            name: type
+            type: INTEGER
+        tableName: source
+- changeSet:
+    id: 1548106818142-4
+    author: albvs (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: source_id
+            type: BIGINT
+        - column:
+            name: comments
+            type: BIGINT
+        tableName: source_comments
+- changeSet:
+    id: 1548106818142-5
+    author: albvs (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: source_id
+            type: BIGINT
+        - column:
+            name: images
+            type: VARCHAR(255)
+        tableName: source_images
+- changeSet:
+    id: 1548106818142-6
+    author: albvs (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: source_id
+        baseTableName: source_images
+        constraintName: FK2xy127ck31xroebnacjmo1d60
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: source
+        validate: true
+- changeSet:
+    id: 1548106818142-7
+    author: albvs (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: source_id
+        baseTableName: source_comments
+        constraintName: FKk52pkcfksg4nkagb3xi2s3s4l
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: source
+        validate: true
+

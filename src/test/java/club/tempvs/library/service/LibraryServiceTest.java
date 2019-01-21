@@ -27,7 +27,7 @@ public class LibraryServiceTest {
     private static final String ADMIN_PANEL_BUTTON = "library.admin.panel.button.text";
     private static final String REQUEST_CONTRIBUTOR_BUTTON = "library.request.contributor.button";
     private static final String REQUEST_SCRIBE_BUTTON = "library.request.scribe.button";
-    private static final String REQUEST_ARCHIVARIUS_BUTTON = "library.request.contributor.button";
+    private static final String REQUEST_ARCHIVARIUS_BUTTON = "library.request.archivarius.button";
     private static final String CANCEL_CONTRIBUTOR_BUTTON = "library.cancel.contributor.button";
     private static final String CANCEL_SCRIBE_BUTTON = "library.cancel.scribe.button";
     private static final String CANCEL_ARCHIVARIUS_BUTTON = "library.cancel.archivarius.button";
