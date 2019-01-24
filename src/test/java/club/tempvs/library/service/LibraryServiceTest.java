@@ -70,7 +70,7 @@ public class LibraryServiceTest {
         assertEquals("Greeting text matches Archivarius", greeting, result.getGreeting());
         assertEquals("Button text matches 'admin panel'", adminPanelButtonText, result.getButtonText());
         assertEquals("Admin panel is available", true, result.isAdminPanelAvailable());
-        assertEquals("No role request option is available", false, result.isRoleRequest());
+        assertEquals("No role request option is available", false, result.isRoleRequestAvailable());
     }
 
     @Test
@@ -92,174 +92,215 @@ public class LibraryServiceTest {
         assertEquals("Greeting text matches Archivarius", greeting, result.getGreeting());
         assertEquals("Button text matches 'admin panel'", adminPanelButtonText, result.getButtonText());
         assertEquals("Admin panel is available", true, result.isAdminPanelAvailable());
-        assertEquals("No role request option is available", false, result.isRoleRequest());
+        assertEquals("No role request option is available", false, result.isRoleRequestAvailable());
     }
 
     @Test
     public void testGetWelcomePageForOrdinaryUser() {
         String greeting = "user greeting";
         String requestContributorButton = "request contributor";
-        Long userId = 1L;
 
         List<Role> roles = new ArrayList<>();
 
-        when(user.getId()).thenReturn(userId);
         when(user.getRoles()).thenReturn(roles);
         when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(USER_GREETING, null, USER_GREETING, Locale.ENGLISH)).thenReturn(greeting);
-        when(roleRequestService.findRoleRequest(userId, Role.ROLE_CONTRIBUTOR)).thenReturn(Optional.empty());
+        when(roleRequestService.findRoleRequest(user, Role.ROLE_CONTRIBUTOR)).thenReturn(Optional.empty());
         when(messageSource.getMessage(REQUEST_CONTRIBUTOR_BUTTON, null, REQUEST_CONTRIBUTOR_BUTTON, Locale.ENGLISH))
                 .thenReturn(requestContributorButton);
 
         WelcomePageDto result = libraryService.getWelcomePage(user);
 
-        verify(roleRequestService).findRoleRequest(userId, Role.ROLE_CONTRIBUTOR);
+        verify(roleRequestService).findRoleRequest(user, Role.ROLE_CONTRIBUTOR);
         verifyNoMoreInteractions(roleRequestService);
 
         assertEquals("Greeting text matches user", greeting, result.getGreeting());
         assertEquals("Button text matches 'contributor request'", requestContributorButton, result.getButtonText());
         assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
         assertEquals("Role field corresponds contributor", Role.ROLE_CONTRIBUTOR.toString(), result.getRole());
-        assertEquals("New role request is available", true, result.isRoleRequest());
+        assertEquals("New role request is available", true, result.isRoleRequestAvailable());
     }
 
     @Test
     public void testGetWelcomePageForOrdinaryUserHavingContributorRequested() {
         String greeting = "user greeting";
         String cancelContributorButton = "cancel contributor";
-        Long userId = 1L;
 
         List<Role> roles = new ArrayList<>();
 
-        when(user.getId()).thenReturn(userId);
         when(user.getRoles()).thenReturn(roles);
         when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(USER_GREETING, null, USER_GREETING, Locale.ENGLISH)).thenReturn(greeting);
-        when(roleRequestService.findRoleRequest(userId, Role.ROLE_CONTRIBUTOR)).thenReturn(Optional.of(roleRequest));
+        when(roleRequestService.findRoleRequest(user, Role.ROLE_CONTRIBUTOR)).thenReturn(Optional.of(roleRequest));
         when(messageSource.getMessage(CANCEL_CONTRIBUTOR_BUTTON, null, CANCEL_CONTRIBUTOR_BUTTON, Locale.ENGLISH))
                 .thenReturn(cancelContributorButton);
 
         WelcomePageDto result = libraryService.getWelcomePage(user);
 
-        verify(roleRequestService).findRoleRequest(userId, Role.ROLE_CONTRIBUTOR);
+        verify(roleRequestService).findRoleRequest(user, Role.ROLE_CONTRIBUTOR);
         verifyNoMoreInteractions(roleRequestService);
 
         assertEquals("Greeting text matches user", greeting, result.getGreeting());
         assertEquals("Button text matches 'contributor request'", cancelContributorButton, result.getButtonText());
         assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
         assertEquals("Role field corresponds contributor", Role.ROLE_CONTRIBUTOR.toString(), result.getRole());
-        assertEquals("Role cancellation option is available", false, result.isRoleRequest());
+        assertEquals("Role cancellation option is available", false, result.isRoleRequestAvailable());
     }
 
     @Test
     public void testGetWelcomePageForContributor() {
         String greeting = "contributor greeting";
         String requestScribeButton = "request scribe";
-        Long userId = 1L;
 
         List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
 
-        when(user.getId()).thenReturn(userId);
         when(user.getRoles()).thenReturn(roles);
         when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(CONTRIBUTOR_GREETING, null, CONTRIBUTOR_GREETING, Locale.ENGLISH)).thenReturn(greeting);
-        when(roleRequestService.findRoleRequest(userId, Role.ROLE_SCRIBE)).thenReturn(Optional.empty());
+        when(roleRequestService.findRoleRequest(user, Role.ROLE_SCRIBE)).thenReturn(Optional.empty());
         when(messageSource.getMessage(REQUEST_SCRIBE_BUTTON, null, REQUEST_SCRIBE_BUTTON, Locale.ENGLISH))
                 .thenReturn(requestScribeButton);
 
         WelcomePageDto result = libraryService.getWelcomePage(user);
 
-        verify(roleRequestService).findRoleRequest(userId, Role.ROLE_SCRIBE);
+        verify(roleRequestService).findRoleRequest(user, Role.ROLE_SCRIBE);
         verifyNoMoreInteractions(roleRequestService);
 
         assertEquals("Greeting text matches contributor", greeting, result.getGreeting());
         assertEquals("Button text matches 'scribe request'", requestScribeButton, result.getButtonText());
         assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
         assertEquals("Role field corresponds scribe", Role.ROLE_SCRIBE.toString(), result.getRole());
-        assertEquals("New role request is available", true, result.isRoleRequest());
+        assertEquals("New role request is available", true, result.isRoleRequestAvailable());
     }
 
     @Test
     public void testGetWelcomePageForContributorHavingScribeRequested() {
         String greeting = "contributor greeting";
         String cancelScribeButton = "cancel scribe";
-        Long userId = 1L;
 
         List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
 
-        when(user.getId()).thenReturn(userId);
         when(user.getRoles()).thenReturn(roles);
         when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(CONTRIBUTOR_GREETING, null, CONTRIBUTOR_GREETING, Locale.ENGLISH)).thenReturn(greeting);
-        when(roleRequestService.findRoleRequest(userId, Role.ROLE_SCRIBE)).thenReturn(Optional.of(roleRequest));
+        when(roleRequestService.findRoleRequest(user, Role.ROLE_SCRIBE)).thenReturn(Optional.of(roleRequest));
         when(messageSource.getMessage(CANCEL_SCRIBE_BUTTON, null, CANCEL_SCRIBE_BUTTON, Locale.ENGLISH))
                 .thenReturn(cancelScribeButton);
 
         WelcomePageDto result = libraryService.getWelcomePage(user);
 
-        verify(roleRequestService).findRoleRequest(userId, Role.ROLE_SCRIBE);
+        verify(roleRequestService).findRoleRequest(user, Role.ROLE_SCRIBE);
         verifyNoMoreInteractions(roleRequestService);
 
         assertEquals("Greeting text matches user", greeting, result.getGreeting());
         assertEquals("Button text matches 'contributor request'", cancelScribeButton, result.getButtonText());
         assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
         assertEquals("Role field corresponds contributor", Role.ROLE_SCRIBE.toString(), result.getRole());
-        assertEquals("Role cancellation option is available", false, result.isRoleRequest());
+        assertEquals("Role cancellation option is available", false, result.isRoleRequestAvailable());
     }
 
     @Test
     public void testGetWelcomePageForScribe() {
         String greeting = "scribe greeting";
         String requestArchivariusButton = "request archivarius";
-        Long userId = 1L;
 
         List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
 
-        when(user.getId()).thenReturn(userId);
         when(user.getRoles()).thenReturn(roles);
         when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(SCRIBE_GREETING, null, SCRIBE_GREETING, Locale.ENGLISH)).thenReturn(greeting);
-        when(roleRequestService.findRoleRequest(userId, Role.ROLE_ARCHIVARIUS)).thenReturn(Optional.empty());
+        when(roleRequestService.findRoleRequest(user, Role.ROLE_ARCHIVARIUS)).thenReturn(Optional.empty());
         when(messageSource.getMessage(REQUEST_ARCHIVARIUS_BUTTON, null, REQUEST_ARCHIVARIUS_BUTTON, Locale.ENGLISH))
                 .thenReturn(requestArchivariusButton);
 
         WelcomePageDto result = libraryService.getWelcomePage(user);
 
-        verify(roleRequestService).findRoleRequest(userId, Role.ROLE_ARCHIVARIUS);
+        verify(roleRequestService).findRoleRequest(user, Role.ROLE_ARCHIVARIUS);
         verifyNoMoreInteractions(roleRequestService);
 
         assertEquals("Greeting text matches contributor", greeting, result.getGreeting());
         assertEquals("Button text matches 'archivarius request'", requestArchivariusButton, result.getButtonText());
         assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
         assertEquals("Role field corresponds archivarius", Role.ROLE_ARCHIVARIUS.toString(), result.getRole());
-        assertEquals("New role request is available", true, result.isRoleRequest());
+        assertEquals("New role request is available", true, result.isRoleRequestAvailable());
     }
 
     @Test
     public void testGetWelcomePageForContributorHavingAchivariusRequested() {
         String greeting = "scribe greeting";
         String cancelArchivariusButton = "cancel archivarius";
-        Long userId = 1L;
-
         List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
 
-        when(user.getId()).thenReturn(userId);
         when(user.getRoles()).thenReturn(roles);
         when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(SCRIBE_GREETING, null, SCRIBE_GREETING, Locale.ENGLISH)).thenReturn(greeting);
-        when(roleRequestService.findRoleRequest(userId, Role.ROLE_ARCHIVARIUS)).thenReturn(Optional.of(roleRequest));
+        when(roleRequestService.findRoleRequest(user, Role.ROLE_ARCHIVARIUS)).thenReturn(Optional.of(roleRequest));
         when(messageSource.getMessage(CANCEL_ARCHIVARIUS_BUTTON, null, CANCEL_ARCHIVARIUS_BUTTON, Locale.ENGLISH))
                 .thenReturn(cancelArchivariusButton);
 
         WelcomePageDto result = libraryService.getWelcomePage(user);
 
-        verify(roleRequestService).findRoleRequest(userId, Role.ROLE_ARCHIVARIUS);
+        verify(roleRequestService).findRoleRequest(user, Role.ROLE_ARCHIVARIUS);
         verifyNoMoreInteractions(roleRequestService);
 
         assertEquals("Greeting text matches user", greeting, result.getGreeting());
         assertEquals("Button text matches 'contributor request'", cancelArchivariusButton, result.getButtonText());
         assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
         assertEquals("Role field corresponds contributor", Role.ROLE_ARCHIVARIUS.toString(), result.getRole());
-        assertEquals("Role cancellation option is available", false, result.isRoleRequest());
+        assertEquals("Role cancellation option is available", false, result.isRoleRequestAvailable());
+    }
+
+    @Test
+    public void testRequestRole() {
+        Role role = Role.ROLE_CONTRIBUTOR;
+        String greeting = "contributor greeting";
+        String cancelScribeButton = "cancel scribe";
+        List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
+
+        when(roleRequestService.createRoleRequest(user, role)).thenReturn(roleRequest);
+        when(user.getRoles()).thenReturn(roles);
+        when(user.getLocale()).thenReturn(Locale.ENGLISH);
+        when(messageSource.getMessage(CONTRIBUTOR_GREETING, null, CONTRIBUTOR_GREETING, Locale.ENGLISH)).thenReturn(greeting);
+        when(messageSource.getMessage(CANCEL_SCRIBE_BUTTON, null, CANCEL_SCRIBE_BUTTON, Locale.ENGLISH))
+                .thenReturn(cancelScribeButton);
+
+        WelcomePageDto result = libraryService.requestRole(user, role);
+
+        verify(roleRequestService).createRoleRequest(user, role);
+        verifyNoMoreInteractions(roleRequestService);
+
+        assertEquals("Greeting text matches user", greeting, result.getGreeting());
+        assertEquals("Button text matches 'contributor request'", cancelScribeButton, result.getButtonText());
+        assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
+        assertEquals("Role field corresponds contributor", Role.ROLE_SCRIBE.toString(), result.getRole());
+        assertEquals("Role cancellation option is available", false, result.isRoleRequestAvailable());
+    }
+
+    @Test
+    public void testCancelRoleRequest() {
+        String greeting = "contributor greeting";
+        String cancelScribeButton = "cancel scribe";
+        Role role = Role.ROLE_SCRIBE;
+        List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
+
+        when(roleRequestService.findRoleRequest(user, role)).thenReturn(Optional.of(roleRequest));
+        when(user.getRoles()).thenReturn(roles);
+        when(user.getLocale()).thenReturn(Locale.ENGLISH);
+        when(messageSource.getMessage(CONTRIBUTOR_GREETING, null, CONTRIBUTOR_GREETING, Locale.ENGLISH)).thenReturn(greeting);
+        when(roleRequestService.findRoleRequest(user, Role.ROLE_SCRIBE)).thenReturn(Optional.of(roleRequest));
+        when(messageSource.getMessage(CANCEL_SCRIBE_BUTTON, null, CANCEL_SCRIBE_BUTTON, Locale.ENGLISH))
+                .thenReturn(cancelScribeButton);
+
+        WelcomePageDto result = libraryService.cancelRoleRequest(user, role);
+
+        verify(roleRequestService, times(2)).findRoleRequest(user, role);
+        verify(roleRequestService).deleteRoleRequest(roleRequest);
+        verifyNoMoreInteractions(roleRequestService);
+
+        assertEquals("Greeting text matches user", greeting, result.getGreeting());
+        assertEquals("Button text matches 'contributor request'", cancelScribeButton, result.getButtonText());
+        assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
+        assertEquals("Role field corresponds contributor", Role.ROLE_SCRIBE.toString(), result.getRole());
+        assertEquals("Role cancellation option is available", false, result.isRoleRequestAvailable());
     }
 }

@@ -9,6 +9,7 @@ import java.util.List;
 
 public enum Role {
 
+    ROLE_USER("role.user"),
     ROLE_ADMIN("role.admin"),
     ROLE_ARCHIVARIUS("role.archivarius"),
     ROLE_SCRIBE("role.scribe"),

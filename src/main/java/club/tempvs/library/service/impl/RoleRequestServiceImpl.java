@@ -24,7 +24,8 @@ public class RoleRequestServiceImpl implements RoleRequestService {
     @HystrixCommand(commandProperties = {
             @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
     })
-    public Optional<RoleRequest> findRoleRequest(Long userId, Role role) {
+    public Optional<RoleRequest> findRoleRequest(User user, Role role) {
+        Long userId = user.getId();
         return roleRequestRepository.findByUserIdAndRole(userId, role);
     }
 
@@ -39,13 +40,20 @@ public class RoleRequestServiceImpl implements RoleRequestService {
             throw new UnsupportedOperationException("Only CONTRIBUTOR, SCRIBE and ARCHIVARIUS roles can be requested");
         }
 
-        Long userId = user.getId();
-
-        if (findRoleRequest(userId, role).isPresent()) {
-            throw new IllegalArgumentException("User with id " + userId + " has already requested " + role.toString() + " role");
+        if (findRoleRequest(user, role).isPresent()) {
+            throw new IllegalArgumentException("User with id " + user.getId() + " has already requested " + role.toString() + " role");
         }
 
-        RoleRequest roleRequest = new RoleRequest(userId, role);
+        RoleRequest roleRequest = new RoleRequest(user, role);
         return roleRequestRepository.save(roleRequest);
+    }
+
+    @Override
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
+    })
+    public void deleteRoleRequest(RoleRequest roleRequest) {
+        Long id = roleRequest.getId();
+        roleRequestRepository.deleteById(id);
     }
 }

@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface RoleRequestService {
 
-    Optional<RoleRequest> findRoleRequest(Long userId, Role role);
-
+    Optional<RoleRequest> findRoleRequest(User user, Role role);
     RoleRequest createRoleRequest(User user, Role role);
+    void deleteRoleRequest(RoleRequest roleRequest);
 }

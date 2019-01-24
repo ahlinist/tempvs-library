@@ -86,14 +86,29 @@ public class LibraryControllerTest {
         Role role = Role.ROLE_CONTRIBUTOR;
 
         when(userConverter.convert(userInfoDto)).thenReturn(user);
-        when(roleRequestService.createRoleRequest(user, role)).thenReturn(roleRequest);
-        when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
+        when(libraryService.requestRole(user, role)).thenReturn(welcomePageDto);
 
         ResponseEntity result = libraryController.requestRole(userInfoDto, TOKEN, role);
 
-        verify(roleRequestService).createRoleRequest(user, role);
-        verify(libraryService).getWelcomePage(user);
-        verifyNoMoreInteractions(libraryService, roleRequestService);
+        verify(libraryService).requestRole(user, role);
+        verifyNoMoreInteractions(libraryService);
+
+        WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
+        assertEquals("The result is a role request", welcomePageDto, resultDto);
+        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+    }
+
+    @Test
+    public void cancelRoleRequest() {
+        Role role = Role.ROLE_SCRIBE;
+
+        when(userConverter.convert(userInfoDto)).thenReturn(user);
+        when(libraryService.cancelRoleRequest(user, role)).thenReturn(welcomePageDto);
+
+        ResponseEntity result = libraryController.cancelRoleRequest(userInfoDto, TOKEN, role);
+
+        verify(libraryService).cancelRoleRequest(user, role);
+        verifyNoMoreInteractions(libraryService);
 
         WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
         assertEquals("The result is a role request", welcomePageDto, resultDto);

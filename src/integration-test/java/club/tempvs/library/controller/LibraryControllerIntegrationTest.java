@@ -14,6 +14,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+
 import static org.hamcrest.Matchers.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
@@ -61,7 +63,7 @@ public class LibraryControllerIntegrationTest {
                     .andExpect(jsonPath("buttonText", is("Become a Contributor")))
                     .andExpect(jsonPath("adminPanelAvailable", is(false)))
                     .andExpect(jsonPath("role", is(Role.ROLE_CONTRIBUTOR.toString())))
-                    .andExpect(jsonPath("roleRequest", is(true)));
+                    .andExpect(jsonPath("roleRequestAvailable", is(true)));
     }
 
     @Test
@@ -79,14 +81,41 @@ public class LibraryControllerIntegrationTest {
                     .andExpect(jsonPath("buttonText", is("Cancel Contributor request")))
                     .andExpect(jsonPath("adminPanelAvailable", is(false)))
                     .andExpect(jsonPath("role", is(Role.ROLE_CONTRIBUTOR.toString())))
-                    .andExpect(jsonPath("roleRequest", is(false)));
+                    .andExpect(jsonPath("roleRequestAvailable", is(false)));
+    }
+
+    @Test
+    public void testCancelRoleRequest() throws Exception {
+        Long userId = 1L;
+        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_CONTRIBUTOR);
+        String role = Role.ROLE_SCRIBE.toString();
+
+        mvc.perform(delete("/api/library/role/" + role)
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                .andExpect(jsonPath("greeting", is(containsString("Greetings in the Library, Contributor!"))))
+                .andExpect(jsonPath("buttonText", is("Become a Scribe")))
+                .andExpect(jsonPath("adminPanelAvailable", is(false)))
+                .andExpect(jsonPath("role", is(Role.ROLE_SCRIBE.toString())))
+                .andExpect(jsonPath("roleRequestAvailable", is(true)));
     }
 
     private String buildUserInfoValue(Long profileId) throws Exception {
+        return buildUserInfoValue(profileId, null);
+    }
+
+    private String buildUserInfoValue(Long profileId, Role role) throws Exception {
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setProfileId(profileId);
         userInfoDto.setLang("en");
         userInfoDto.setTimezone("UTC");
+
+        if (role != null) {
+            userInfoDto.setRoles(Arrays.asList(role.toString()));
+        }
+
         return mapper.writeValueAsString(userInfoDto);
     }
 }

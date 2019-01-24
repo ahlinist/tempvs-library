@@ -40,9 +40,10 @@ public class RoleRequestServiceTest {
         Long userId = 1L;
         Role role = Role.ROLE_CONTRIBUTOR;
 
+        when(user.getId()).thenReturn(userId);
         when(roleRequestRepository.findByUserIdAndRole(userId, role)).thenReturn(Optional.of(roleRequest));
 
-        Optional<RoleRequest> result = roleRequestService.findRoleRequest(userId, role);
+        Optional<RoleRequest> result = roleRequestService.findRoleRequest(user, role);
 
         verify(roleRequestRepository).findByUserIdAndRole(userId, role);
         verifyNoMoreInteractions(roleRequestRepository);
@@ -54,9 +55,10 @@ public class RoleRequestServiceTest {
     public void testCreateRoleRequest() {
         Long userId = 1L;
         Role role = Role.ROLE_SCRIBE;
-        RoleRequest roleRequest = new RoleRequest(userId, role);
+        User user = new User();
+        user.setId(userId);
+        RoleRequest roleRequest = new RoleRequest(user, role);
 
-        when(user.getId()).thenReturn(userId);
         when(roleRequestRepository.findByUserIdAndRole(userId, role)).thenReturn(Optional.empty());
         when(roleRequestRepository.save(roleRequest)).thenReturn(roleRequest);
 
@@ -66,19 +68,20 @@ public class RoleRequestServiceTest {
         verify(roleRequestRepository).save(roleRequest);
         verifyNoMoreInteractions(roleRequestRepository);
 
-        assertEquals("RoleRequest object is returned", roleRequest, result);
+        assertEquals("RoleRequest is created for scribe role", role, result.getRole());
+        assertEquals("RoleRequest is created for user with id " + userId, userId, result.getUserId());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateRoleRequestForExistentEntry() {
         Long userId = 1L;
         Role role = Role.ROLE_SCRIBE;
-        RoleRequest roleRequest = new RoleRequest(userId, role);
+        RoleRequest roleRequest = new RoleRequest(user, role);
 
         when(user.getId()).thenReturn(userId);
         when(roleRequestRepository.findByUserIdAndRole(userId, role)).thenReturn(Optional.of(roleRequest));
 
-        RoleRequest result = roleRequestService.createRoleRequest(user, role);
+        roleRequestService.createRoleRequest(user, role);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -86,5 +89,17 @@ public class RoleRequestServiceTest {
         Role role = Role.ROLE_ADMIN;
 
         roleRequestService.createRoleRequest(user, role);
+    }
+
+    @Test
+    public void testDeleteRoleRequest() {
+        Long id = 1L;
+
+        when(roleRequest.getId()).thenReturn(id);
+
+        roleRequestService.deleteRoleRequest(roleRequest);
+
+        verify(roleRequestRepository).deleteById(id);
+        verifyNoMoreInteractions(roleRequestRepository);
     }
 }

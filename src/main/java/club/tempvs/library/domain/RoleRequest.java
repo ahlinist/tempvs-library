@@ -1,6 +1,7 @@
 package club.tempvs.library.domain;
 
 import club.tempvs.library.model.Role;
+import club.tempvs.library.model.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -29,8 +30,8 @@ public class RoleRequest {
     @CreatedDate
     private Instant createdDate;
 
-    public RoleRequest(Long userId, Role role) {
-        this.userId = userId;
+    public RoleRequest(User user, Role role) {
+        this.userId = user.getId();
         this.role = role;
     }
 }

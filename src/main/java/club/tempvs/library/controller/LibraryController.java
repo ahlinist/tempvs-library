@@ -57,11 +57,21 @@ public class LibraryController {
             @PathVariable("role") Role role) {
         authHelper.authenticate(token);
         User user = userConverter.convert(userInfoDto);
-        roleRequestService.createRoleRequest(user, role);
-        WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
+        WelcomePageDto welcomePageDto = libraryService.requestRole(user, role);
         return ResponseEntity.ok(welcomePageDto);
     }
 
+
+    @DeleteMapping("/library/role/{role}")
+    public ResponseEntity cancelRoleRequest(
+            @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
+            @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String token,
+            @PathVariable("role") Role role) {
+        authHelper.authenticate(token);
+        User user = userConverter.convert(userInfoDto);
+        WelcomePageDto welcomePageDto = libraryService.cancelRoleRequest(user, role);
+        return ResponseEntity.ok(welcomePageDto);
+    }
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String returnInternalError(Exception e) {
