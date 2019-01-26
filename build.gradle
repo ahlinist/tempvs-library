@@ -30,11 +30,10 @@ configurations {
 
 repositories {
 	mavenCentral()
-	maven { url 'https://repo.spring.io/milestone' }
 }
 
 ext {
-	set('springCloudVersion', 'Greenwich.RC2')
+	set('springCloudVersion', 'Greenwich.RELEASE')
 }
 
 dependencies {
