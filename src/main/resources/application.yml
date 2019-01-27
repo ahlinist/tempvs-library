@@ -40,6 +40,8 @@ eureka:
 security:
   user:
     password: ${eureka.password}
+scheduling:
+  enabled: true
 ---
 spring:
   profiles: local

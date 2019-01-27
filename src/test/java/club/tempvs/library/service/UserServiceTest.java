@@ -1,12 +1,13 @@
 package club.tempvs.library.service;
 
 import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
 
 import club.tempvs.library.dao.UserRepository;
 import club.tempvs.library.domain.User;
+import club.tempvs.library.dto.UserDto;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.service.impl.UserServiceImpl;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +28,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testSaveUser() {
+    public void testSaveUserForUserDto() {
         Long userId = 1L;
         String userName = "name";
         Long userProfileId = 2L;
@@ -44,6 +45,27 @@ public class UserServiceTest {
         verify(userRepository).save(user);
         verifyNoMoreInteractions(userRepository);
 
-        Assert.assertEquals("User is returned as a result", user, result);
+        assertEquals("User is returned as a result", user, result);
+    }
+
+    @Test
+    public void testSaveUserForUserInfoDto() {
+        Long userId = 1L;
+        String userName = "name";
+        Long userProfileId = 2L;
+        UserDto userDto = new UserDto();
+        userDto.setId(userId);
+        userDto.setUserName(userName);
+        userDto.setUserProfileId(userProfileId);
+        User user = new User(userDto);
+
+        when(userRepository.save(user)).thenReturn(user);
+
+        User result = userService.saveUser(userDto);
+
+        verify(userRepository).save(user);
+        verifyNoMoreInteractions(userRepository);
+
+        assertEquals("User is returned as a result", user, result);
     }
 }

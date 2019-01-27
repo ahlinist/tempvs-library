@@ -2,6 +2,7 @@ package club.tempvs.library.domain;
 
 import static java.util.stream.Collectors.toList;
 
+import club.tempvs.library.dto.UserDto;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.model.Role;
 import lombok.Data;
@@ -50,5 +51,11 @@ public class User {
                 .filter(stringRoles::contains)
                 .map(Role::valueOf)
                 .collect(toList());
+    }
+
+    public User(UserDto userDto) {
+        this.id = userDto.getId();
+        this.userProfileId = userDto.getUserProfileId();
+        this.userName = userDto.getUserName();
     }
 }
