@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 import static java.util.stream.Collectors.toList;
 
 import club.tempvs.library.model.Role;
-import club.tempvs.library.model.User;
+import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.util.impl.UserConverterImpl;
 import org.junit.Before;

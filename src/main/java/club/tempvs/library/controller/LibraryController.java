@@ -2,7 +2,7 @@ package club.tempvs.library.controller;
 
 import club.tempvs.library.api.UnauthorizedException;
 import club.tempvs.library.model.Role;
-import club.tempvs.library.model.User;
+import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.service.LibraryService;

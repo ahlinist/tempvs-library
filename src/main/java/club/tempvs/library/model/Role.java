@@ -15,7 +15,9 @@ public enum Role {
     ROLE_SCRIBE("role.scribe"),
     ROLE_CONTRIBUTOR("role.contributor");
 
-    public static List<String> stringValues = Arrays.stream(Role.values()).map(Role::toString).collect(toList());
+    public static List<String> getStringValues() {
+        return Arrays.stream(Role.values()).map(Role::toString).collect(toList());
+    }
 
     @Getter
     String key;

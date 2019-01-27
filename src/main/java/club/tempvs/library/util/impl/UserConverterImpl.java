@@ -1,6 +1,6 @@
 package club.tempvs.library.util.impl;
 
-import club.tempvs.library.model.User;
+import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.util.UserConverter;
 import org.springframework.stereotype.Component;

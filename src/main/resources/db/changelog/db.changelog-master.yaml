@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
       file: db/changelog/changes/base.yaml
+  - include:
+      file: db/changelog/changes/make-user-persistent.yaml

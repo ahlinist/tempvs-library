@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 import club.tempvs.library.dao.RoleRequestRepository;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.RoleRequest;
-import club.tempvs.library.model.User;
+import club.tempvs.library.domain.User;
 import club.tempvs.library.service.impl.RoleRequestServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +69,7 @@ public class RoleRequestServiceTest {
         verifyNoMoreInteractions(roleRequestRepository);
 
         assertEquals("RoleRequest is created for scribe role", role, result.getRole());
-        assertEquals("RoleRequest is created for user with id " + userId, userId, result.getUserId());
+        assertEquals("RoleRequest is created for user with id " + userId, user, result.getUser());
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -1,16 +1,12 @@
 package club.tempvs.library.domain;
 
 import club.tempvs.library.model.Role;
-import club.tempvs.library.model.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.Instant;
 
 @Data
@@ -23,7 +19,8 @@ public class RoleRequest {
     @GeneratedValue
     private Long id;
 
-    private Long userId;
+    @OneToOne
+    private User user;
 
     private Role role;
 
@@ -31,7 +28,7 @@ public class RoleRequest {
     private Instant createdDate;
 
     public RoleRequest(User user, Role role) {
-        this.userId = user.getId();
+        this.user = user;
         this.role = role;
     }
 }
