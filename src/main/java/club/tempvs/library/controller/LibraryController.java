@@ -6,9 +6,8 @@ import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.service.LibraryService;
-import club.tempvs.library.service.RoleRequestService;
+import club.tempvs.library.service.UserService;
 import club.tempvs.library.util.AuthHelper;
-import club.tempvs.library.util.UserConverter;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -31,9 +30,8 @@ public class LibraryController {
     private static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final AuthHelper authHelper;
-    private final UserConverter userConverter;
+    private final UserService userService;
     private final LibraryService libraryService;
-    private final RoleRequestService roleRequestService;
 
     @GetMapping("/ping")
     public String getPong() {
@@ -45,7 +43,7 @@ public class LibraryController {
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
             @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String token) {
         authHelper.authenticate(token);
-        User user = userConverter.convert(userInfoDto);
+        User user = new User(userInfoDto);
         WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
         return ResponseEntity.ok(welcomePageDto);
     }
@@ -56,7 +54,7 @@ public class LibraryController {
             @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String token,
             @PathVariable("role") Role role) {
         authHelper.authenticate(token);
-        User user = userConverter.convert(userInfoDto);
+        User user = userService.saveUser(userInfoDto);
         WelcomePageDto welcomePageDto = libraryService.requestRole(user, role);
         return ResponseEntity.ok(welcomePageDto);
     }
@@ -68,7 +66,7 @@ public class LibraryController {
             @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String token,
             @PathVariable("role") Role role) {
         authHelper.authenticate(token);
-        User user = userConverter.convert(userInfoDto);
+        User user = userService.saveUser(userInfoDto);
         WelcomePageDto welcomePageDto = libraryService.cancelRoleRequest(user, role);
         return ResponseEntity.ok(welcomePageDto);
     }

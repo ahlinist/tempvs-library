@@ -11,7 +11,7 @@ public class UserInfoDto {
     private Long profileId;
     private Long userProfileId;
     private String userName;
-    private String timezone;
-    private String lang;
+    private String timezone = "UTC";
+    private String lang = "en";
     private List<String> roles = new ArrayList<>();
 }

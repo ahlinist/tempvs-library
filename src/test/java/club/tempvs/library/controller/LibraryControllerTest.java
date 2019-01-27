@@ -3,15 +3,13 @@ package club.tempvs.library.controller;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import club.tempvs.library.domain.RoleRequest;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.service.LibraryService;
-import club.tempvs.library.service.RoleRequestService;
+import club.tempvs.library.service.UserService;
 import club.tempvs.library.util.AuthHelper;
-import club.tempvs.library.util.UserConverter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +31,7 @@ public class LibraryControllerTest {
     private UserInfoDto userInfoDto;
 
     @Mock
-    private UserConverter userConverter;
+    private UserService userService;
 
     @Mock
     private AuthHelper authHelper;
@@ -42,17 +40,11 @@ public class LibraryControllerTest {
     private LibraryService libraryService;
 
     @Mock
-    private RoleRequestService roleRequestService;
-
-    @Mock
     private WelcomePageDto welcomePageDto;
-
-    @Mock
-    private RoleRequest roleRequest;
 
     @Before
     public void setup() {
-        libraryController = new LibraryController(authHelper, userConverter, libraryService, roleRequestService);
+        libraryController = new LibraryController(authHelper, userService, libraryService);
     }
 
     @Test
@@ -66,15 +58,15 @@ public class LibraryControllerTest {
 
     @Test
     public void testGetWelcomePage() {
+        UserInfoDto userInfoDto = new UserInfoDto();
+        User user = new User(userInfoDto);
 
-        when(userConverter.convert(userInfoDto)).thenReturn(user);
         when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
 
         ResponseEntity result = libraryController.getWelcomePage(userInfoDto, TOKEN);
 
-        verify(userConverter).convert(userInfoDto);
         verify(libraryService).getWelcomePage(user);
-        verifyNoMoreInteractions(userConverter, libraryService);
+        verifyNoMoreInteractions(libraryService);
 
         WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
         assertEquals("The result is a role request", welcomePageDto, resultDto);
@@ -85,13 +77,14 @@ public class LibraryControllerTest {
     public void testRequestRole() {
         Role role = Role.ROLE_CONTRIBUTOR;
 
-        when(userConverter.convert(userInfoDto)).thenReturn(user);
+        when(userService.saveUser(userInfoDto)).thenReturn(user);
         when(libraryService.requestRole(user, role)).thenReturn(welcomePageDto);
 
         ResponseEntity result = libraryController.requestRole(userInfoDto, TOKEN, role);
 
+        verify(userService).saveUser(userInfoDto);
         verify(libraryService).requestRole(user, role);
-        verifyNoMoreInteractions(libraryService);
+        verifyNoMoreInteractions(libraryService, userService);
 
         WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
         assertEquals("The result is a role request", welcomePageDto, resultDto);
@@ -102,13 +95,14 @@ public class LibraryControllerTest {
     public void cancelRoleRequest() {
         Role role = Role.ROLE_SCRIBE;
 
-        when(userConverter.convert(userInfoDto)).thenReturn(user);
+        when(userService.saveUser(userInfoDto)).thenReturn(user);
         when(libraryService.cancelRoleRequest(user, role)).thenReturn(welcomePageDto);
 
         ResponseEntity result = libraryController.cancelRoleRequest(userInfoDto, TOKEN, role);
 
+        verify(userService).saveUser(userInfoDto);
         verify(libraryService).cancelRoleRequest(user, role);
-        verifyNoMoreInteractions(libraryService);
+        verifyNoMoreInteractions(libraryService, userService);
 
         WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
         assertEquals("The result is a role request", welcomePageDto, resultDto);

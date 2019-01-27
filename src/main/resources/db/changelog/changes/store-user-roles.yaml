@@ -1,0 +1,30 @@
+databaseChangeLog:
+- changeSet:
+    id: 1548619018234-1
+    author: albvs (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: user_id
+            type: BIGINT
+        - column:
+            name: roles
+            type: INTEGER
+        tableName: user_roles
+- changeSet:
+    id: 1548619018234-2
+    author: albvs (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: user_id
+        baseTableName: user_roles
+        constraintName: FK55itppkw3i07do3h7qoclqd4k
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: user
+        validate: true
+

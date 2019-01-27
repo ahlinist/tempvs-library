@@ -25,8 +25,7 @@ public class RoleRequestServiceImpl implements RoleRequestService {
             @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
     })
     public Optional<RoleRequest> findRoleRequest(User user, Role role) {
-        Long userId = user.getId();
-        return roleRequestRepository.findByUserIdAndRole(userId, role);
+        return roleRequestRepository.findByUserAndRole(user, role);
     }
 
     @Override

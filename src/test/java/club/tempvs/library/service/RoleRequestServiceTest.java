@@ -40,12 +40,11 @@ public class RoleRequestServiceTest {
         Long userId = 1L;
         Role role = Role.ROLE_CONTRIBUTOR;
 
-        when(user.getId()).thenReturn(userId);
-        when(roleRequestRepository.findByUserIdAndRole(userId, role)).thenReturn(Optional.of(roleRequest));
+        when(roleRequestRepository.findByUserAndRole(user, role)).thenReturn(Optional.of(roleRequest));
 
         Optional<RoleRequest> result = roleRequestService.findRoleRequest(user, role);
 
-        verify(roleRequestRepository).findByUserIdAndRole(userId, role);
+        verify(roleRequestRepository).findByUserAndRole(user, role);
         verifyNoMoreInteractions(roleRequestRepository);
 
         assertEquals("Optional of roleRequest is returned", Optional.of(roleRequest), result);
@@ -59,12 +58,12 @@ public class RoleRequestServiceTest {
         user.setId(userId);
         RoleRequest roleRequest = new RoleRequest(user, role);
 
-        when(roleRequestRepository.findByUserIdAndRole(userId, role)).thenReturn(Optional.empty());
+        when(roleRequestRepository.findByUserAndRole(user, role)).thenReturn(Optional.empty());
         when(roleRequestRepository.save(roleRequest)).thenReturn(roleRequest);
 
         RoleRequest result = roleRequestService.createRoleRequest(user, role);
 
-        verify(roleRequestRepository).findByUserIdAndRole(userId, role);
+        verify(roleRequestRepository).findByUserAndRole(user, role);
         verify(roleRequestRepository).save(roleRequest);
         verifyNoMoreInteractions(roleRequestRepository);
 
@@ -79,7 +78,7 @@ public class RoleRequestServiceTest {
         RoleRequest roleRequest = new RoleRequest(user, role);
 
         when(user.getId()).thenReturn(userId);
-        when(roleRequestRepository.findByUserIdAndRole(userId, role)).thenReturn(Optional.of(roleRequest));
+        when(roleRequestRepository.findByUserAndRole(user, role)).thenReturn(Optional.of(roleRequest));
 
         roleRequestService.createRoleRequest(user, role);
     }

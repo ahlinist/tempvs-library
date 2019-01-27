@@ -7,8 +7,11 @@ import club.tempvs.library.model.Role;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Locale;
 
@@ -19,12 +22,21 @@ public class User {
 
     @Id
     private Long id;
+
     private transient Long profileId;
+
+    @NotNull
     private Long userProfileId;
+
+    @NotBlank
     private String userName;
+
     private transient String timezone;
+
     private transient Locale locale;
-    private transient List<Role> roles;
+
+    @ElementCollection
+    private List<Role> roles;
 
     public User(UserInfoDto userInfoDto) {
         List<String> stringRoles = Role.getStringValues();
