@@ -3,6 +3,9 @@ package club.tempvs.library.service;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
+import club.tempvs.library.api.ForbiddenException;
+import club.tempvs.library.dto.AdminPanelPageDto;
+import club.tempvs.library.dto.RoleRequestDto;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.RoleRequest;
 import club.tempvs.library.domain.User;
@@ -302,5 +305,52 @@ public class LibraryServiceTest {
         assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
         assertEquals("Role field corresponds contributor", Role.ROLE_SCRIBE.toString(), result.getRole());
         assertEquals("Role cancellation option is available", false, result.isRoleRequestAvailable());
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testGetAdminPanelPageForInsufficientRights() {
+        int page = 1;
+        int size = 40;
+        List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
+
+        when(user.getRoles()).thenReturn(roles);
+
+        libraryService.getAdminPanelPage(user, page, size);
+    }
+
+    @Test
+    public void testGetAdminPanelPage() {
+        Long userId = 1L;
+        Long userProfileId = 2L;
+        String userName = "name";
+        int page = 1;
+        int size = 40;
+        Locale locale = Locale.ENGLISH;
+        List<Role> roles = Arrays.asList(Role.ROLE_ARCHIVARIUS);
+        List<RoleRequest> roleRequests = Arrays.asList(roleRequest, roleRequest);
+        Role role = Role.ROLE_CONTRIBUTOR;
+        String roleNameKey = role.getKey();
+        String roleName = "Contributor";
+        User user = new User();
+        user.setId(userId);
+        user.setUserProfileId(userProfileId);
+        user.setUserName(userName);
+        user.setRoles(roles);
+        user.setLocale(locale);
+        RoleRequestDto roleRequestDto = new RoleRequestDto(user, roleName);
+        AdminPanelPageDto adminPanelPageDto = new AdminPanelPageDto(Arrays.asList(roleRequestDto, roleRequestDto));
+
+        when(roleRequestService.getRoleRequests(page, size)).thenReturn(roleRequests);
+        when(roleRequest.getRole()).thenReturn(role);
+        when(roleRequest.getUser()).thenReturn(user);
+        when(messageSource.getMessage(roleNameKey, null, roleNameKey, locale)).thenReturn(roleName);
+
+        AdminPanelPageDto result = libraryService.getAdminPanelPage(user, page, size);
+
+        verify(roleRequestService).getRoleRequests(page, size);
+        verify(messageSource, times(2)).getMessage(roleNameKey, null, roleNameKey, locale);
+        verifyNoMoreInteractions(roleRequestService, messageSource);
+
+        assertEquals("AdminPanelPageDto is returned", adminPanelPageDto, result);
     }
 }

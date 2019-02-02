@@ -1,5 +1,9 @@
 package club.tempvs.library.controller;
 
+import club.tempvs.library.dao.RoleRequestRepository;
+import club.tempvs.library.dao.UserRepository;
+import club.tempvs.library.domain.RoleRequest;
+import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,6 +37,12 @@ public class LibraryControllerIntegrationTest {
     private static final String TOKEN = "df41895b9f26094d0b1d39b7bdd9849e"; //security_token as MD5
 
     private static ObjectMapper mapper = new ObjectMapper();
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RoleRequestRepository roleRequestRepository;
 
     @Autowired
     private MockMvc mvc;
@@ -105,6 +115,50 @@ public class LibraryControllerIntegrationTest {
                     .andExpect(jsonPath("roleRequestAvailable", is(true)));
     }
 
+    @Test
+    public void testAdminPanelPage() throws Exception {
+        Long id = 1L;
+        Long userId = 2L;
+        Long userProfileId = 3L;
+        String userName = "name";
+        String userInfoValue = buildUserInfoValue(id, Role.ROLE_ARCHIVARIUS);
+        User user = new User();
+        user.setId(userId);
+        user.setUserProfileId(userProfileId);
+        user.setUserName(userName);
+        createRoleRequest(user, Role.ROLE_CONTRIBUTOR);
+        createRoleRequest(user, Role.ROLE_SCRIBE);
+
+        mvc.perform(get("/api/library/admin")
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("roleRequests", hasSize(2)))
+                    .andExpect(jsonPath("roleRequests[0].userId", is(userId.intValue())))
+                    .andExpect(jsonPath("roleRequests[0].userProfileId", is(userProfileId.intValue())))
+                    .andExpect(jsonPath("roleRequests[0].userName", is(userName)))
+                    .andExpect(jsonPath("roleRequests[0].role", is("Contributor")))
+                    .andExpect(jsonPath("roleRequests[1].userId", is(userId.intValue())))
+                    .andExpect(jsonPath("roleRequests[1].userProfileId", is(userProfileId.intValue())))
+                    .andExpect(jsonPath("roleRequests[1].userName", is(userName)))
+                    .andExpect(jsonPath("roleRequests[1].role", is("Scribe")));
+    }
+
+    @Test
+    public void testAdminPanelPageForInsufficientAuthorities() throws Exception {
+        Long id = 1L;
+        String userInfoValue = buildUserInfoValue(id);
+
+        mvc.perform(get("/api/library/admin")
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                .andExpect(status().isForbidden());
+    }
+
     private String buildUserInfoValue(Long id) throws Exception {
         return buildUserInfoValue(id, null);
     }
@@ -121,5 +175,11 @@ public class LibraryControllerIntegrationTest {
         }
 
         return mapper.writeValueAsString(userInfoDto);
+    }
+
+    private void createRoleRequest(User user, Role role) {
+        RoleRequest roleRequest = new RoleRequest(user, role);
+        userRepository.saveAndFlush(user);
+        roleRequestRepository.saveAndFlush(roleRequest);
     }
 }

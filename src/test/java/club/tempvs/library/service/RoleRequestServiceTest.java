@@ -13,7 +13,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -29,6 +35,9 @@ public class RoleRequestServiceTest {
 
     @Mock
     private RoleRequestRepository roleRequestRepository;
+
+    @Mock
+    private Page<RoleRequest> roleRequestPage;
 
     @Before
     public void setup() {
@@ -100,5 +109,23 @@ public class RoleRequestServiceTest {
 
         verify(roleRequestRepository).deleteById(id);
         verifyNoMoreInteractions(roleRequestRepository);
+    }
+
+    @Test
+    public void testGetRoleRequests() {
+        int page = 1;
+        int size = 40;
+        List<RoleRequest> roleRequests = Arrays.asList(roleRequest);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
+
+        when(roleRequestRepository.findAll(pageable)).thenReturn(roleRequestPage);
+        when(roleRequestPage.getContent()).thenReturn(roleRequests);
+
+        List<RoleRequest> result = roleRequestService.getRoleRequests(page, size);
+
+        verify(roleRequestRepository).findAll(pageable);
+        verifyNoMoreInteractions(roleRequestRepository);
+
+        assertEquals("A list of rolerequests is returned", roleRequests, result);
     }
 }

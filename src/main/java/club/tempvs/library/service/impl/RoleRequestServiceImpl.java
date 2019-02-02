@@ -8,6 +8,10 @@ import club.tempvs.library.service.RoleRequestService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -54,5 +58,16 @@ public class RoleRequestServiceImpl implements RoleRequestService {
     public void deleteRoleRequest(RoleRequest roleRequest) {
         Long id = roleRequest.getId();
         roleRequestRepository.deleteById(id);
+    }
+
+
+    @Override
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
+    })
+    public List<RoleRequest> getRoleRequests(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
+        Page<RoleRequest> roleRequestPage = roleRequestRepository.findAll(pageable);
+        return roleRequestPage.getContent();
     }
 }

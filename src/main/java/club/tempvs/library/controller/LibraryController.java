@@ -1,12 +1,13 @@
 package club.tempvs.library.controller;
 
+import club.tempvs.library.api.ForbiddenException;
 import club.tempvs.library.api.UnauthorizedException;
+import club.tempvs.library.dto.AdminPanelPageDto;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.service.LibraryService;
-import club.tempvs.library.service.UserService;
 import club.tempvs.library.util.AuthHelper;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +29,13 @@ public class LibraryController {
 
     private static final String USER_INFO_HEADER = "User-Info";
     private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String PAGE_PARAM = "page";
+    private static final String SIZE_PARAM = "size";
+    private static final String DEFAULT_PAGE_VALUE = "0";
+    private static final String DEFAULT_SIZE_VALUE = "40";
+    private static final int MAX_PAGE_SIZE = 40;
 
     private final AuthHelper authHelper;
-    private final UserService userService;
     private final LibraryService libraryService;
 
     @GetMapping("/ping")
@@ -41,7 +46,7 @@ public class LibraryController {
     @GetMapping("/library")
     public ResponseEntity getWelcomePage(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
-            @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String token) {
+            @RequestHeader(AUTHORIZATION_HEADER) String token) {
         authHelper.authenticate(token);
         User user = new User(userInfoDto);
         WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
@@ -51,10 +56,10 @@ public class LibraryController {
     @PostMapping("/library/role/{role}")
     public ResponseEntity requestRole(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
-            @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String token,
+            @RequestHeader(AUTHORIZATION_HEADER) String token,
             @PathVariable("role") Role role) {
         authHelper.authenticate(token);
-        User user = userService.saveUser(userInfoDto);
+        User user = new User(userInfoDto);
         WelcomePageDto welcomePageDto = libraryService.requestRole(user, role);
         return ResponseEntity.ok(welcomePageDto);
     }
@@ -63,13 +68,31 @@ public class LibraryController {
     @DeleteMapping("/library/role/{role}")
     public ResponseEntity cancelRoleRequest(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
-            @RequestHeader(value = AUTHORIZATION_HEADER, required = false) String token,
+            @RequestHeader(AUTHORIZATION_HEADER) String token,
             @PathVariable("role") Role role) {
         authHelper.authenticate(token);
-        User user = userService.saveUser(userInfoDto);
+        User user = new User(userInfoDto);
         WelcomePageDto welcomePageDto = libraryService.cancelRoleRequest(user, role);
         return ResponseEntity.ok(welcomePageDto);
     }
+
+    @GetMapping("/library/admin")
+    public ResponseEntity getAdminPanelPage(
+            @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
+            @RequestHeader(AUTHORIZATION_HEADER) String token,
+            @RequestParam(value = PAGE_PARAM, required = false, defaultValue = DEFAULT_PAGE_VALUE) int page,
+            @RequestParam(value = SIZE_PARAM, required = false, defaultValue = DEFAULT_SIZE_VALUE) int size) {
+        authHelper.authenticate(token);
+
+        if (size > MAX_PAGE_SIZE) {
+            throw new IllegalArgumentException("Page size must not be larger than " + MAX_PAGE_SIZE + "!");
+        }
+
+        User user = new User(userInfoDto);
+        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(user, page, size);
+        return ResponseEntity.ok(adminPanelPageDto);
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String returnInternalError(Exception e) {
@@ -79,6 +102,12 @@ public class LibraryController {
     @ExceptionHandler(UnauthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public String returnUnauthorized(UnauthorizedException e) {
+        return processException(e);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String returnForbidden(ForbiddenException e) {
         return processException(e);
     }
 

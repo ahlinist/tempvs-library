@@ -1,5 +1,10 @@
 package club.tempvs.library.service.impl;
 
+import static java.util.stream.Collectors.toList;
+
+import club.tempvs.library.api.ForbiddenException;
+import club.tempvs.library.dto.AdminPanelPageDto;
+import club.tempvs.library.dto.RoleRequestDto;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.RoleRequest;
 import club.tempvs.library.domain.User;
@@ -53,7 +58,6 @@ public class LibraryServiceImpl implements LibraryService {
     private final MessageSource messageSource;
     private final RoleRequestService roleRequestService;
 
-
     @Override
     public WelcomePageDto getWelcomePage(User user) {
         return getWelcomePage(user, null);
@@ -70,6 +74,26 @@ public class LibraryServiceImpl implements LibraryService {
         roleRequestService.findRoleRequest(user, role)
                 .ifPresent(roleRequestService::deleteRoleRequest);
         return getWelcomePage(user, null);
+    }
+
+    @Override
+    public AdminPanelPageDto getAdminPanelPage(User user, int page, int size) {
+        List<Role> roles = user.getRoles();
+
+        if (!roles.contains(Role.ROLE_ADMIN) && !roles.contains(Role.ROLE_ARCHIVARIUS)) {
+            throw new ForbiddenException("Access denied. Archivarius or admin role is required.");
+        }
+
+        Locale locale = user.getLocale();
+        List<RoleRequest> roleRequests = roleRequestService.getRoleRequests(page, size);
+
+        List<RoleRequestDto> roleRequestDtos = roleRequests.stream()
+                .map(roleRequest -> {
+                    String roleKey = roleRequest.getRole().getKey();
+                    String role =  messageSource.getMessage(roleKey, null, roleKey, locale);
+                    return new RoleRequestDto(roleRequest.getUser(), role);
+                }).collect(toList());
+        return new AdminPanelPageDto(roleRequestDtos);
     }
 
     private WelcomePageDto getWelcomePage(User user, RoleRequest roleRequest) {
