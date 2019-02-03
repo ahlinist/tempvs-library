@@ -75,9 +75,11 @@ public class LibraryServiceImpl implements LibraryService {
 
         List<RoleRequestDto> roleRequestDtos = roleRequests.stream()
                 .map(roleRequest -> {
-                    String roleKey = roleRequest.getRole().getKey();
-                    String role =  messageSource.getMessage(roleKey, null, roleKey, LocaleContextHolder.getLocale());
-                    return new RoleRequestDto(roleRequest.getUser(), role);
+                    Role role = roleRequest.getRole();
+                    String roleKey = role.getKey();
+                    String roleLabel = messageSource
+                            .getMessage(roleKey, null, roleKey, LocaleContextHolder.getLocale());
+                    return new RoleRequestDto(roleRequest.getUser(), role, roleLabel);
                 }).collect(toList());
         return new AdminPanelPageDto(roleRequestDtos);
     }

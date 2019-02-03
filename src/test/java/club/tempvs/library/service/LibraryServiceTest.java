@@ -299,7 +299,7 @@ public class LibraryServiceTest {
         user.setUserName(userName);
         user.setRoles(roles);
         user.setLocale(locale);
-        RoleRequestDto roleRequestDto = new RoleRequestDto(user, roleName);
+        RoleRequestDto roleRequestDto = new RoleRequestDto(user, role, roleName);
         AdminPanelPageDto adminPanelPageDto = new AdminPanelPageDto(Arrays.asList(roleRequestDto, roleRequestDto));
 
         when(roleRequestService.getRoleRequests(page, size)).thenReturn(roleRequests);

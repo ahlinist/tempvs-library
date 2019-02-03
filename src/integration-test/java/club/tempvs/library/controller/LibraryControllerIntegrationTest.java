@@ -139,11 +139,13 @@ public class LibraryControllerIntegrationTest {
                     .andExpect(jsonPath("roleRequests[0].userId", is(userId.intValue())))
                     .andExpect(jsonPath("roleRequests[0].userProfileId", is(userProfileId.intValue())))
                     .andExpect(jsonPath("roleRequests[0].userName", is(userName)))
-                    .andExpect(jsonPath("roleRequests[0].role", is("Contributor")))
+                    .andExpect(jsonPath("roleRequests[0].role", is("ROLE_CONTRIBUTOR")))
+                    .andExpect(jsonPath("roleRequests[0].roleLabel", is("Contributor")))
                     .andExpect(jsonPath("roleRequests[1].userId", is(userId.intValue())))
                     .andExpect(jsonPath("roleRequests[1].userProfileId", is(userProfileId.intValue())))
                     .andExpect(jsonPath("roleRequests[1].userName", is(userName)))
-                    .andExpect(jsonPath("roleRequests[1].role", is("Scribe")));
+                    .andExpect(jsonPath("roleRequests[1].role", is("ROLE_SCRIBE")))
+                    .andExpect(jsonPath("roleRequests[1].roleLabel", is("Scribe")));
     }
 
     @Test
@@ -183,7 +185,8 @@ public class LibraryControllerIntegrationTest {
                 .andExpect(jsonPath("roleRequests[0].userId", is(userId.intValue())))
                 .andExpect(jsonPath("roleRequests[0].userProfileId", is(userProfileId.intValue())))
                 .andExpect(jsonPath("roleRequests[0].userName", is(userName)))
-                .andExpect(jsonPath("roleRequests[0].role", is("Contributor")));
+                .andExpect(jsonPath("roleRequests[0].role", is("ROLE_CONTRIBUTOR")))
+                .andExpect(jsonPath("roleRequests[0].roleLabel", is("Contributor")));
     }
 
     private String buildUserInfoValue(Long id) throws Exception {
