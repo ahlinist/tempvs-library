@@ -13,12 +13,15 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api")
@@ -72,7 +75,8 @@ public class LibraryController {
             @PathVariable("role") Role role) {
         authHelper.authenticate(token);
         User user = new User(userInfoDto);
-        WelcomePageDto welcomePageDto = libraryService.cancelRoleRequest(user, role);
+        libraryService.deleteRoleRequest(user, role);
+        WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
         return ResponseEntity.ok(welcomePageDto);
     }
 
@@ -83,13 +87,20 @@ public class LibraryController {
             @RequestParam(value = PAGE_PARAM, required = false, defaultValue = DEFAULT_PAGE_VALUE) int page,
             @RequestParam(value = SIZE_PARAM, required = false, defaultValue = DEFAULT_SIZE_VALUE) int size) {
         authHelper.authenticate(token);
+        User user = new User(userInfoDto);
+        List<Role> roles = user.getRoles();
+
+        if (!roles.contains(Role.ROLE_ADMIN) && !roles.contains(Role.ROLE_ARCHIVARIUS)) {
+            throw new ForbiddenException("Access denied. Archivarius or admin role is required.");
+        }
 
         if (size > MAX_PAGE_SIZE) {
             throw new IllegalArgumentException("Page size must not be larger than " + MAX_PAGE_SIZE + "!");
         }
 
-        User user = new User(userInfoDto);
-        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(user, page, size);
+        Locale locale = user.getLocale();
+        LocaleContextHolder.setLocale(locale);
+        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(page, size);
         return ResponseEntity.ok(adminPanelPageDto);
     }
 

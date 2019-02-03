@@ -2,7 +2,6 @@ package club.tempvs.library.service.impl;
 
 import static java.util.stream.Collectors.toList;
 
-import club.tempvs.library.api.ForbiddenException;
 import club.tempvs.library.dto.AdminPanelPageDto;
 import club.tempvs.library.dto.RoleRequestDto;
 import club.tempvs.library.model.Role;
@@ -14,6 +13,7 @@ import club.tempvs.library.service.RoleRequestService;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -70,30 +70,22 @@ public class LibraryServiceImpl implements LibraryService {
     }
 
     @Override
-    public WelcomePageDto cancelRoleRequest(User user, Role role) {
-        roleRequestService.findRoleRequest(user, role)
-                .ifPresent(roleRequestService::deleteRoleRequest);
-        return getWelcomePage(user, null);
-    }
-
-    @Override
-    public AdminPanelPageDto getAdminPanelPage(User user, int page, int size) {
-        List<Role> roles = user.getRoles();
-
-        if (!roles.contains(Role.ROLE_ADMIN) && !roles.contains(Role.ROLE_ARCHIVARIUS)) {
-            throw new ForbiddenException("Access denied. Archivarius or admin role is required.");
-        }
-
-        Locale locale = user.getLocale();
+    public AdminPanelPageDto getAdminPanelPage(int page, int size) {
         List<RoleRequest> roleRequests = roleRequestService.getRoleRequests(page, size);
 
         List<RoleRequestDto> roleRequestDtos = roleRequests.stream()
                 .map(roleRequest -> {
                     String roleKey = roleRequest.getRole().getKey();
-                    String role =  messageSource.getMessage(roleKey, null, roleKey, locale);
+                    String role =  messageSource.getMessage(roleKey, null, roleKey, LocaleContextHolder.getLocale());
                     return new RoleRequestDto(roleRequest.getUser(), role);
                 }).collect(toList());
         return new AdminPanelPageDto(roleRequestDtos);
+    }
+
+    @Override
+    public void deleteRoleRequest(User user, Role role) {
+        roleRequestService.findRoleRequest(user, role)
+                .ifPresent(roleRequestService::deleteRoleRequest);
     }
 
     private WelcomePageDto getWelcomePage(User user, RoleRequest roleRequest) {

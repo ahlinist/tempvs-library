@@ -3,7 +3,6 @@ package club.tempvs.library.service;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
-import club.tempvs.library.api.ForbiddenException;
 import club.tempvs.library.dto.AdminPanelPageDto;
 import club.tempvs.library.dto.RoleRequestDto;
 import club.tempvs.library.model.Role;
@@ -17,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.*;
 
@@ -280,45 +280,6 @@ public class LibraryServiceTest {
     }
 
     @Test
-    public void testCancelRoleRequest() {
-        String greeting = "contributor greeting";
-        String cancelScribeButton = "cancel scribe";
-        Role role = Role.ROLE_SCRIBE;
-        List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
-
-        when(roleRequestService.findRoleRequest(user, role)).thenReturn(Optional.of(roleRequest));
-        when(user.getRoles()).thenReturn(roles);
-        when(user.getLocale()).thenReturn(Locale.ENGLISH);
-        when(messageSource.getMessage(CONTRIBUTOR_GREETING, null, CONTRIBUTOR_GREETING, Locale.ENGLISH)).thenReturn(greeting);
-        when(roleRequestService.findRoleRequest(user, Role.ROLE_SCRIBE)).thenReturn(Optional.of(roleRequest));
-        when(messageSource.getMessage(CANCEL_SCRIBE_BUTTON, null, CANCEL_SCRIBE_BUTTON, Locale.ENGLISH))
-                .thenReturn(cancelScribeButton);
-
-        WelcomePageDto result = libraryService.cancelRoleRequest(user, role);
-
-        verify(roleRequestService, times(2)).findRoleRequest(user, role);
-        verify(roleRequestService).deleteRoleRequest(roleRequest);
-        verifyNoMoreInteractions(roleRequestService);
-
-        assertEquals("Greeting text matches user", greeting, result.getGreeting());
-        assertEquals("Button text matches 'contributor request'", cancelScribeButton, result.getButtonText());
-        assertEquals("Admin panel is not available", false, result.isAdminPanelAvailable());
-        assertEquals("Role field corresponds contributor", Role.ROLE_SCRIBE.toString(), result.getRole());
-        assertEquals("Role cancellation option is available", false, result.isRoleRequestAvailable());
-    }
-
-    @Test(expected = ForbiddenException.class)
-    public void testGetAdminPanelPageForInsufficientRights() {
-        int page = 1;
-        int size = 40;
-        List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
-
-        when(user.getRoles()).thenReturn(roles);
-
-        libraryService.getAdminPanelPage(user, page, size);
-    }
-
-    @Test
     public void testGetAdminPanelPage() {
         Long userId = 1L;
         Long userProfileId = 2L;
@@ -326,6 +287,7 @@ public class LibraryServiceTest {
         int page = 1;
         int size = 40;
         Locale locale = Locale.ENGLISH;
+        LocaleContextHolder.setLocale(locale);
         List<Role> roles = Arrays.asList(Role.ROLE_ARCHIVARIUS);
         List<RoleRequest> roleRequests = Arrays.asList(roleRequest, roleRequest);
         Role role = Role.ROLE_CONTRIBUTOR;
@@ -345,12 +307,25 @@ public class LibraryServiceTest {
         when(roleRequest.getUser()).thenReturn(user);
         when(messageSource.getMessage(roleNameKey, null, roleNameKey, locale)).thenReturn(roleName);
 
-        AdminPanelPageDto result = libraryService.getAdminPanelPage(user, page, size);
+        AdminPanelPageDto result = libraryService.getAdminPanelPage(page, size);
 
         verify(roleRequestService).getRoleRequests(page, size);
         verify(messageSource, times(2)).getMessage(roleNameKey, null, roleNameKey, locale);
         verifyNoMoreInteractions(roleRequestService, messageSource);
 
         assertEquals("AdminPanelPageDto is returned", adminPanelPageDto, result);
+    }
+
+    @Test
+    public void testDenyRoleRequest() {
+        Role role = Role.ROLE_SCRIBE;
+
+        when(roleRequestService.findRoleRequest(user, role)).thenReturn(Optional.of(roleRequest));
+
+        libraryService.deleteRoleRequest(user, role);
+
+        verify(roleRequestService).findRoleRequest(user, role);
+        verify(roleRequestService).deleteRoleRequest(roleRequest);
+        verifyNoMoreInteractions(roleRequestService);
     }
 }

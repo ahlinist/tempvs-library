@@ -3,6 +3,7 @@ package club.tempvs.library.controller;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import club.tempvs.library.api.ForbiddenException;
 import club.tempvs.library.dto.AdminPanelPageDto;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.User;
@@ -16,6 +17,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.ResponseEntity;
+
+import java.util.Arrays;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LibraryControllerTest {
@@ -88,11 +91,12 @@ public class LibraryControllerTest {
         User user = new User(userInfoDto);
         Role role = Role.ROLE_SCRIBE;
 
-        when(libraryService.cancelRoleRequest(user, role)).thenReturn(welcomePageDto);
+        when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
 
         ResponseEntity result = libraryController.cancelRoleRequest(userInfoDto, TOKEN, role);
 
-        verify(libraryService).cancelRoleRequest(user, role);
+        verify(libraryService).deleteRoleRequest(user, role);
+        verify(libraryService).getWelcomePage(user);
         verifyNoMoreInteractions(libraryService);
 
         WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
@@ -105,13 +109,13 @@ public class LibraryControllerTest {
         int page = 1;
         int size = 40;
         UserInfoDto userInfoDto = new UserInfoDto();
-        User user = new User(userInfoDto);
+        userInfoDto.setRoles(Arrays.asList("ROLE_ARCHIVARIUS"));
 
-        when(libraryService.getAdminPanelPage(user, page, size)).thenReturn(adminPanelPageDto);
+        when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
         ResponseEntity result = libraryController.getAdminPanelPage(userInfoDto, TOKEN, page, size);
 
-        verify(libraryService).getAdminPanelPage(user, page, size);
+        verify(libraryService).getAdminPanelPage(page, size);
         verifyNoMoreInteractions(libraryService);
 
         AdminPanelPageDto resultDto = (AdminPanelPageDto) result.getBody();
@@ -123,6 +127,16 @@ public class LibraryControllerTest {
     public void testGetAdminPanelPageForInvalidPageSize() {
         int page = 1;
         int size = 41;
+        UserInfoDto userInfoDto = new UserInfoDto();
+        userInfoDto.setRoles(Arrays.asList("ROLE_ARCHIVARIUS"));
+
+        libraryController.getAdminPanelPage(userInfoDto, TOKEN, page, size);
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testGetAdminPanelPageForInsufficientAuthorities() {
+        int page = 1;
+        int size = 40;
         UserInfoDto userInfoDto = new UserInfoDto();
 
         libraryController.getAdminPanelPage(userInfoDto, TOKEN, page, size);
