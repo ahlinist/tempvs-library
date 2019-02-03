@@ -3,7 +3,6 @@ package club.tempvs.library.service.impl;
 import club.tempvs.library.dao.UserRepository;
 import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserDto;
-import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.service.UserService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
@@ -29,8 +28,8 @@ public class UserServiceImpl implements UserService {
     @HystrixCommand(commandProperties = {
             @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
     })
-    public User saveUser(UserInfoDto userInfoDto) {
-        User user = new User(userInfoDto);
-        return userRepository.save(user);
+    public User getUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("No user with id " + id + " found"));
     }
 }

@@ -8,6 +8,7 @@ import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.service.LibraryService;
+import club.tempvs.library.service.UserService;
 import club.tempvs.library.util.AuthHelper;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.Locale;
 
 @RestController
 @RequestMapping("/api")
@@ -40,6 +40,7 @@ public class LibraryController {
 
     private final AuthHelper authHelper;
     private final LibraryService libraryService;
+    private final UserService userService;
 
     @GetMapping("/ping")
     public String getPong() {
@@ -98,8 +99,34 @@ public class LibraryController {
             throw new IllegalArgumentException("Page size must not be larger than " + MAX_PAGE_SIZE + "!");
         }
 
-        Locale locale = user.getLocale();
-        LocaleContextHolder.setLocale(locale);
+        LocaleContextHolder.setLocale(user.getLocale());
+        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(page, size);
+        return ResponseEntity.ok(adminPanelPageDto);
+    }
+
+    @DeleteMapping("/library/{role}/{userId}")
+    public ResponseEntity denyRoleRequest(
+            @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
+            @RequestHeader(AUTHORIZATION_HEADER) String token,
+            @RequestParam(value = PAGE_PARAM, required = false, defaultValue = DEFAULT_PAGE_VALUE) int page,
+            @RequestParam(value = SIZE_PARAM, required = false, defaultValue = DEFAULT_SIZE_VALUE) int size,
+            @PathVariable("role") Role role,
+            @PathVariable("userId") Long userId) {
+        authHelper.authenticate(token);
+        User adminUser = new User(userInfoDto);
+        List<Role> roles = adminUser.getRoles();
+
+        if (!roles.contains(Role.ROLE_ADMIN) && !roles.contains(Role.ROLE_ARCHIVARIUS)) {
+            throw new ForbiddenException("Access denied. Archivarius or admin role is required.");
+        }
+
+        if (size > MAX_PAGE_SIZE) {
+            throw new IllegalArgumentException("Page size must not be larger than " + MAX_PAGE_SIZE + "!");
+        }
+
+        LocaleContextHolder.setLocale(adminUser.getLocale());
+        User user = userService.getUser(userId);
+        libraryService.deleteRoleRequest(user, role);
         AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(page, size);
         return ResponseEntity.ok(adminPanelPageDto);
     }

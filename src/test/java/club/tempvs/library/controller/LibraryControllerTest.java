@@ -10,6 +10,7 @@ import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.service.LibraryService;
+import club.tempvs.library.service.UserService;
 import club.tempvs.library.util.AuthHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,10 +36,12 @@ public class LibraryControllerTest {
     private WelcomePageDto welcomePageDto;
     @Mock
     private AdminPanelPageDto adminPanelPageDto;
+    @Mock
+    private UserService userService;
 
     @Before
     public void setup() {
-        libraryController = new LibraryController(authHelper, libraryService);
+        libraryController = new LibraryController(authHelper, libraryService, userService);
     }
 
     @Test
@@ -140,5 +143,54 @@ public class LibraryControllerTest {
         UserInfoDto userInfoDto = new UserInfoDto();
 
         libraryController.getAdminPanelPage(userInfoDto, TOKEN, page, size);
+    }
+
+    @Test
+    public void testDenyRoleRequest() {
+        int page = 1;
+        int size = 40;
+        UserInfoDto userInfoDto = new UserInfoDto();
+        userInfoDto.setRoles(Arrays.asList("ROLE_ARCHIVARIUS"));
+        Role role = Role.ROLE_SCRIBE;
+        Long userId = 1L;
+        User user = new User();
+
+        when(userService.getUser(userId)).thenReturn(user);
+        when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
+
+        ResponseEntity result = libraryController.denyRoleRequest(userInfoDto, TOKEN, page, size, role, userId);
+
+        verify(userService).getUser(userId);
+        verify(libraryService).deleteRoleRequest(user, role);
+        verify(libraryService).getAdminPanelPage(page, size);
+        verifyNoMoreInteractions(userService, libraryService);
+
+        AdminPanelPageDto resultDto = (AdminPanelPageDto) result.getBody();
+        assertEquals("The result is a role request", adminPanelPageDto, resultDto);
+        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testDenyRoleRequestForInsufficientAuthorities() {
+        int page = 1;
+        int size = 40;
+        UserInfoDto userInfoDto = new UserInfoDto();
+        userInfoDto.setRoles(Arrays.asList("ROLE_SCRIBE"));
+        Role role = Role.ROLE_SCRIBE;
+        Long userId = 1L;
+
+        libraryController.denyRoleRequest(userInfoDto, TOKEN, page, size, role, userId);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDenyRoleRequestForWrongPaging() {
+        int page = 1;
+        int size = 41;
+        UserInfoDto userInfoDto = new UserInfoDto();
+        userInfoDto.setRoles(Arrays.asList("ROLE_ARCHIVARIUS"));
+        Role role = Role.ROLE_SCRIBE;
+        Long userId = 1L;
+
+        libraryController.denyRoleRequest(userInfoDto, TOKEN, page, size, role, userId);
     }
 }
