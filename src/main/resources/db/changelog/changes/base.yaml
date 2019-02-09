@@ -1,12 +1,46 @@
 databaseChangeLog:
 - changeSet:
-    id: 1548106818142-1
+    id: 1549705884197-1
     author: albvs (generated)
     changes:
     - createSequence:
         sequenceName: hibernate_sequence
 - changeSet:
-    id: 1548106818142-2
+    id: 1549705884197-2
+    author: albvs (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              primaryKey: true
+              primaryKeyName: app_userPK
+            name: id
+            type: BIGINT
+        - column:
+            name: user_name
+            type: VARCHAR(255)
+        - column:
+            name: user_profile_id
+            type: BIGINT
+        tableName: app_user
+- changeSet:
+    id: 1549705884197-3
+    author: albvs (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: app_user_id
+            type: BIGINT
+        - column:
+            name: roles
+            type: INTEGER
+        tableName: app_user_roles
+- changeSet:
+    id: 1549705884197-4
     author: albvs (generated)
     changes:
     - createTable:
@@ -29,7 +63,7 @@ databaseChangeLog:
             type: BIGINT
         tableName: role_request
 - changeSet:
-    id: 1548106818142-3
+    id: 1549705884197-5
     author: albvs (generated)
     changes:
     - createTable:
@@ -61,7 +95,7 @@ databaseChangeLog:
             type: INTEGER
         tableName: source
 - changeSet:
-    id: 1548106818142-4
+    id: 1549705884197-6
     author: albvs (generated)
     changes:
     - createTable:
@@ -76,7 +110,7 @@ databaseChangeLog:
             type: BIGINT
         tableName: source_comments
 - changeSet:
-    id: 1548106818142-5
+    id: 1549705884197-7
     author: albvs (generated)
     changes:
     - createTable:
@@ -91,7 +125,7 @@ databaseChangeLog:
             type: VARCHAR(255)
         tableName: source_images
 - changeSet:
-    id: 1548106818142-6
+    id: 1549705884197-8
     author: albvs (generated)
     changes:
     - addForeignKeyConstraint:
@@ -104,7 +138,20 @@ databaseChangeLog:
         referencedTableName: source
         validate: true
 - changeSet:
-    id: 1548106818142-7
+    id: 1549705884197-9
+    author: albvs (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: user_id
+        baseTableName: role_request
+        constraintName: FK9yofb27td15c97c9e0qjsdy3k
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: app_user
+        validate: true
+- changeSet:
+    id: 1549705884197-10
     author: albvs (generated)
     changes:
     - addForeignKeyConstraint:
@@ -115,5 +162,18 @@ databaseChangeLog:
         initiallyDeferred: false
         referencedColumnNames: id
         referencedTableName: source
+        validate: true
+- changeSet:
+    id: 1549705884197-11
+    author: albvs (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: app_user_id
+        baseTableName: app_user_roles
+        constraintName: FKkwxexnudtp5gmt82j0qtytnoe
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: app_user
         validate: true
 

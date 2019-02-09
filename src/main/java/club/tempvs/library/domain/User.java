@@ -18,7 +18,7 @@ import java.util.Locale;
 
 @Data
 @NoArgsConstructor
-@Entity
+@Entity(name = "app_user")
 public class User {
 
     @Id
