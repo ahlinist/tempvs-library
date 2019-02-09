@@ -6,6 +6,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -17,6 +18,7 @@ public abstract class AbstractAMQPConnector {
 
     protected final ConnectionFactory amqpConnectionFactory;
     protected final ObjectMapper jacksonObjectMapper;
+    protected final String queue;
 
     protected void receive(Consumer<String> action) {
         Connection connection = null;
@@ -25,10 +27,10 @@ public abstract class AbstractAMQPConnector {
         try {
             connection = amqpConnectionFactory.newConnection();
             channel = connection.createChannel();
-            channel.queueDeclare(getQueue(), false, false, false, null);
+            channel.queueDeclare(queue, false, false, false, null);
 
             QueueingConsumer consumer = new QueueingConsumer(channel);
-            channel.basicConsume(getQueue(), true, consumer);
+            channel.basicConsume(queue, true, consumer);
 
             while (true) {
                 QueueingConsumer.Delivery delivery = consumer.nextDelivery(DELIVERY_TIMEOUT);
@@ -37,7 +39,7 @@ public abstract class AbstractAMQPConnector {
                     String message = new String(delivery.getBody());
                     action.accept(message);
                 } else {
-                    throw new RuntimeException("The " + getQueue() + " queue is empty");
+                    throw new RuntimeException("The " + queue + " queue is empty");
                 }
             }
         } catch (RuntimeException e) {
@@ -45,23 +47,41 @@ public abstract class AbstractAMQPConnector {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (channel != null) {
-                    channel.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            closeResources(connection, channel);
         }
     }
 
-    protected abstract String getQueue();
+    protected void send(String json) {
+        Connection connection = null;
+        Channel channel = null;
+
+        try {
+            connection = amqpConnectionFactory.newConnection();
+            channel = connection.createChannel();
+            channel.queueDeclare(queue, false, false, false, null);
+            channel.basicPublish("", queue, null, json.getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(connection, channel);
+        }
+    }
+
+    private void closeResources(Connection connection, Channel channel) {
+        try {
+            if (channel != null) {
+                channel.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

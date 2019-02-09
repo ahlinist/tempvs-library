@@ -14,4 +14,6 @@ public interface LibraryService {
     AdminPanelPageDto getAdminPanelPage(int page, int size);
 
     void deleteRoleRequest(User user, Role role);
+
+    void confirmRoleRequest(User user, Role role);
 }

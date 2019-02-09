@@ -1,8 +1,10 @@
 package club.tempvs.library.service.impl;
 
+import club.tempvs.library.amqp.UserRoleChannel;
 import club.tempvs.library.dao.UserRepository;
 import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserDto;
+import club.tempvs.library.dto.UserRolesDto;
 import club.tempvs.library.service.UserService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserRoleChannel userRoleChannel;
 
     @Override
     @HystrixCommand(commandProperties = {
@@ -31,5 +34,10 @@ public class UserServiceImpl implements UserService {
     public User getUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("No user with id " + id + " found"));
+    }
+
+    @Override
+    public void updateUserRoles(UserRolesDto userRolesDto) {
+        userRoleChannel.updateRoles(userRolesDto);
     }
 }

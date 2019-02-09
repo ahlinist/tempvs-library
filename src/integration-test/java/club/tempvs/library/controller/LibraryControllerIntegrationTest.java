@@ -189,6 +189,34 @@ public class LibraryControllerIntegrationTest {
                 .andExpect(jsonPath("roleRequests[0].roleLabel", is("Contributor")));
     }
 
+    @Test
+    public void testConfirmRoleRequest() throws Exception {
+        Long id = 1L;
+        Long userId = 2L;
+        Long userProfileId = 3L;
+        String userName = "name";
+        String userInfoValue = buildUserInfoValue(id, Role.ROLE_ARCHIVARIUS);
+        User user = new User();
+        user.setId(userId);
+        user.setUserProfileId(userProfileId);
+        user.setUserName(userName);
+        createRoleRequest(user, Role.ROLE_CONTRIBUTOR);
+        createRoleRequest(user, Role.ROLE_SCRIBE);
+
+        mvc.perform(post("/api/library/" + Role.ROLE_SCRIBE.toString() + "/" + userId.intValue())
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("roleRequests", hasSize(1)))
+                .andExpect(jsonPath("roleRequests[0].userId", is(userId.intValue())))
+                .andExpect(jsonPath("roleRequests[0].userProfileId", is(userProfileId.intValue())))
+                .andExpect(jsonPath("roleRequests[0].userName", is(userName)))
+                .andExpect(jsonPath("roleRequests[0].role", is("ROLE_CONTRIBUTOR")))
+                .andExpect(jsonPath("roleRequests[0].roleLabel", is("Contributor")));
+    }
+
     private String buildUserInfoValue(Long id) throws Exception {
         return buildUserInfoValue(id, null);
     }

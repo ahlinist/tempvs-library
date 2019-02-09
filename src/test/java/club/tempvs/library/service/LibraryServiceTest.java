@@ -328,4 +328,41 @@ public class LibraryServiceTest {
         verify(roleRequestService).deleteRoleRequest(roleRequest);
         verifyNoMoreInteractions(roleRequestService);
     }
+
+    @Test
+    public void testDenyRoleRequestForEmptyResult() {
+        Role role = Role.ROLE_SCRIBE;
+
+        when(roleRequestService.findRoleRequest(user, role)).thenReturn(Optional.empty());
+
+        libraryService.deleteRoleRequest(user, role);
+
+        verify(roleRequestService).findRoleRequest(user, role);
+        verifyNoMoreInteractions(roleRequestService);
+    }
+
+    @Test
+    public void testConfirmRoleRequest() {
+        Role role = Role.ROLE_SCRIBE;
+
+        when(roleRequestService.findRoleRequest(user, role)).thenReturn(Optional.of(roleRequest));
+
+        libraryService.confirmRoleRequest(user, role);
+
+        verify(roleRequestService).findRoleRequest(user, role);
+        verify(roleRequestService).confirmRoleRequest(roleRequest);
+        verifyNoMoreInteractions(roleRequestService);
+    }
+
+    @Test
+    public void testConfirmRoleRequestForEmptyResult() {
+        Role role = Role.ROLE_SCRIBE;
+
+        when(roleRequestService.findRoleRequest(user, role)).thenReturn(Optional.empty());
+
+        libraryService.confirmRoleRequest(user, role);
+
+        verify(roleRequestService).findRoleRequest(user, role);
+        verifyNoMoreInteractions(roleRequestService);
+    }
 }

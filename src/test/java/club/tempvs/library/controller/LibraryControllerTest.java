@@ -147,7 +147,7 @@ public class LibraryControllerTest {
 
     @Test
     public void testDenyRoleRequest() {
-        int page = 1;
+        int page = 0;
         int size = 40;
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setRoles(Arrays.asList("ROLE_ARCHIVARIUS"));
@@ -158,7 +158,7 @@ public class LibraryControllerTest {
         when(userService.getUser(userId)).thenReturn(user);
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        ResponseEntity result = libraryController.denyRoleRequest(userInfoDto, TOKEN, page, size, role, userId);
+        ResponseEntity result = libraryController.denyRoleRequest(userInfoDto, TOKEN, role, userId);
 
         verify(userService).getUser(userId);
         verify(libraryService).deleteRoleRequest(user, role);
@@ -172,25 +172,46 @@ public class LibraryControllerTest {
 
     @Test(expected = ForbiddenException.class)
     public void testDenyRoleRequestForInsufficientAuthorities() {
-        int page = 1;
-        int size = 40;
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setRoles(Arrays.asList("ROLE_SCRIBE"));
         Role role = Role.ROLE_SCRIBE;
         Long userId = 1L;
 
-        libraryController.denyRoleRequest(userInfoDto, TOKEN, page, size, role, userId);
+        libraryController.denyRoleRequest(userInfoDto, TOKEN, role, userId);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testDenyRoleRequestForWrongPaging() {
-        int page = 1;
-        int size = 41;
+    @Test
+    public void testConfirmRoleRequest() {
+        int page = 0;
+        int size = 40;
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setRoles(Arrays.asList("ROLE_ARCHIVARIUS"));
         Role role = Role.ROLE_SCRIBE;
         Long userId = 1L;
+        User user = new User();
 
-        libraryController.denyRoleRequest(userInfoDto, TOKEN, page, size, role, userId);
+        when(userService.getUser(userId)).thenReturn(user);
+        when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
+
+        ResponseEntity result = libraryController.confirmRoleRequest(userInfoDto, TOKEN, role, userId);
+
+        verify(userService).getUser(userId);
+        verify(libraryService).confirmRoleRequest(user, role);
+        verify(libraryService).getAdminPanelPage(page, size);
+        verifyNoMoreInteractions(userService, libraryService);
+
+        AdminPanelPageDto resultDto = (AdminPanelPageDto) result.getBody();
+        assertEquals("The result is a role request", adminPanelPageDto, resultDto);
+        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testConfirmRoleRequestForInsufficientAuthorities() {
+        UserInfoDto userInfoDto = new UserInfoDto();
+        userInfoDto.setRoles(Arrays.asList("ROLE_SCRIBE"));
+        Role role = Role.ROLE_SCRIBE;
+        Long userId = 1L;
+
+        libraryController.confirmRoleRequest(userInfoDto, TOKEN, role, userId);
     }
 }

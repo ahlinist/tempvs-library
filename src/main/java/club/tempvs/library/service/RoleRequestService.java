@@ -16,4 +16,6 @@ public interface RoleRequestService {
     void deleteRoleRequest(RoleRequest roleRequest);
 
     List<RoleRequest> getRoleRequests(int page, int size);
+
+    void confirmRoleRequest(RoleRequest roleRequest);
 }

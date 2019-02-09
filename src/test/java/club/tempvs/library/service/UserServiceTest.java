@@ -3,9 +3,11 @@ package club.tempvs.library.service;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
+import club.tempvs.library.amqp.UserRoleChannel;
 import club.tempvs.library.dao.UserRepository;
 import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserDto;
+import club.tempvs.library.dto.UserRolesDto;
 import club.tempvs.library.service.impl.UserServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,10 +26,14 @@ public class UserServiceTest {
     private User user;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private UserRoleChannel userRoleChannel;
+    @Mock
+    private UserRolesDto userRolesDto;
 
     @Before
     public void setup() {
-        userService = new UserServiceImpl(userRepository);
+        userService = new UserServiceImpl(userRepository, userRoleChannel);
     }
 
     @Test
@@ -72,5 +78,13 @@ public class UserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         userService.getUser(userId);
+    }
+
+    @Test
+    public void testUpdateUserRoles() {
+        userService.updateUserRoles(userRolesDto);
+
+        verify(userRoleChannel).updateRoles(userRolesDto);
+        verifyNoMoreInteractions(userRoleChannel, userRolesDto);
     }
 }

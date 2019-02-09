@@ -1,8 +1,16 @@
 spring:
   liquibase:
     enabled: false
+  datasource:
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    username: sa
+    password: sa
+    driverClassName: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
 authorization:
   token: security_token
 amqp:
+  enabled: false
   url: amqp://login:pass@host/login
   timeout: 30000

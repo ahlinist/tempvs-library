@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
 import club.tempvs.library.dao.RoleRequestRepository;
+import club.tempvs.library.dto.UserRolesDto;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.RoleRequest;
 import club.tempvs.library.domain.User;
@@ -29,24 +30,22 @@ public class RoleRequestServiceTest {
 
     @Mock
     private User user;
-
+    @Mock
+    private UserService userService;
     @Mock
     private RoleRequest roleRequest;
-
     @Mock
     private RoleRequestRepository roleRequestRepository;
-
     @Mock
     private Page<RoleRequest> roleRequestPage;
 
     @Before
     public void setup() {
-        roleRequestService = new RoleRequestServiceImpl(roleRequestRepository);
+        roleRequestService = new RoleRequestServiceImpl(roleRequestRepository, userService);
     }
 
     @Test
     public void testFindRoleRequest() {
-        Long userId = 1L;
         Role role = Role.ROLE_CONTRIBUTOR;
 
         when(roleRequestRepository.findByUserAndRole(user, role)).thenReturn(Optional.of(roleRequest));
@@ -127,5 +126,30 @@ public class RoleRequestServiceTest {
         verifyNoMoreInteractions(roleRequestRepository);
 
         assertEquals("A list of rolerequests is returned", roleRequests, result);
+    }
+
+    @Test
+    public void testConfirmRoleRequest() {
+        Long userId = 1L;
+        Long roleRequestId = 2L;
+        Role role = Role.ROLE_SCRIBE;
+        String roleString = role.toString();
+
+        UserRolesDto userRolesDto = new UserRolesDto(userId, Arrays.asList(roleString));
+
+        when(roleRequest.getUser()).thenReturn(user);
+        when(user.getId()).thenReturn(userId);
+        when(roleRequest.getRole()).thenReturn(role);
+        when(roleRequest.getId()).thenReturn(roleRequestId);
+
+        roleRequestService.confirmRoleRequest(roleRequest);
+
+        verify(roleRequest).getUser();
+        verify(user).getId();
+        verify(roleRequest).getRole();
+        verify(userService).updateUserRoles(userRolesDto);
+        verify(roleRequest).getId();
+        verify(roleRequestRepository).deleteById(roleRequestId);
+        verifyNoMoreInteractions(roleRequestRepository, userService, roleRequest);
     }
 }

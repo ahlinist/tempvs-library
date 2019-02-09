@@ -21,16 +21,12 @@ public class UserSynchronizerImpl extends AbstractAMQPConnector implements UserS
     public UserSynchronizerImpl(ObjectMapper jacksonObjectMapper,
                                 UserService userService,
                                 ConnectionFactory amqpConnectionFactory) {
-        super(amqpConnectionFactory, jacksonObjectMapper);
+        super(amqpConnectionFactory, jacksonObjectMapper, LIBRARY_USER_AMQP_QUEUE);
         this.userService = userService;
     }
 
     public void execute() {
         super.receive(this::refreshUser);
-    }
-
-    protected String getQueue() {
-        return LIBRARY_USER_AMQP_QUEUE;
     }
 
     private void refreshUser(String json) {

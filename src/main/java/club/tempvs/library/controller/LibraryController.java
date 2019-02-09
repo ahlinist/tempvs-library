@@ -34,8 +34,10 @@ public class LibraryController {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String PAGE_PARAM = "page";
     private static final String SIZE_PARAM = "size";
-    private static final String DEFAULT_PAGE_VALUE = "0";
-    private static final String DEFAULT_SIZE_VALUE = "40";
+    private static final String DEFAULT_PAGE_PARAM = "0";
+    private static final int DEFAULT_PAGE_VALUE = 0;
+    private static final String DEFAULT_SIZE_PARAM = "40";
+    private static final int DEFAULT_SIZE_VALUE = 40;
     private static final int MAX_PAGE_SIZE = 40;
 
     private final AuthHelper authHelper;
@@ -85,8 +87,8 @@ public class LibraryController {
     public ResponseEntity getAdminPanelPage(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
             @RequestHeader(AUTHORIZATION_HEADER) String token,
-            @RequestParam(value = PAGE_PARAM, required = false, defaultValue = DEFAULT_PAGE_VALUE) int page,
-            @RequestParam(value = SIZE_PARAM, required = false, defaultValue = DEFAULT_SIZE_VALUE) int size) {
+            @RequestParam(value = PAGE_PARAM, required = false, defaultValue = DEFAULT_PAGE_PARAM) int page,
+            @RequestParam(value = SIZE_PARAM, required = false, defaultValue = DEFAULT_SIZE_PARAM) int size) {
         authHelper.authenticate(token);
         User user = new User(userInfoDto);
         List<Role> roles = user.getRoles();
@@ -108,8 +110,6 @@ public class LibraryController {
     public ResponseEntity denyRoleRequest(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
             @RequestHeader(AUTHORIZATION_HEADER) String token,
-            @RequestParam(value = PAGE_PARAM, required = false, defaultValue = DEFAULT_PAGE_VALUE) int page,
-            @RequestParam(value = SIZE_PARAM, required = false, defaultValue = DEFAULT_SIZE_VALUE) int size,
             @PathVariable("role") Role role,
             @PathVariable("userId") Long userId) {
         authHelper.authenticate(token);
@@ -120,14 +120,31 @@ public class LibraryController {
             throw new ForbiddenException("Access denied. Archivarius or admin role is required.");
         }
 
-        if (size > MAX_PAGE_SIZE) {
-            throw new IllegalArgumentException("Page size must not be larger than " + MAX_PAGE_SIZE + "!");
+        LocaleContextHolder.setLocale(adminUser.getLocale());
+        User user = userService.getUser(userId);
+        libraryService.deleteRoleRequest(user, role);
+        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(DEFAULT_PAGE_VALUE, DEFAULT_SIZE_VALUE);
+        return ResponseEntity.ok(adminPanelPageDto);
+    }
+
+    @PostMapping("/library/{role}/{userId}")
+    public ResponseEntity confirmRoleRequest(
+            @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
+            @RequestHeader(AUTHORIZATION_HEADER) String token,
+            @PathVariable("role") Role role,
+            @PathVariable("userId") Long userId) {
+        authHelper.authenticate(token);
+        User adminUser = new User(userInfoDto);
+        List<Role> roles = adminUser.getRoles();
+
+        if (!roles.contains(Role.ROLE_ADMIN) && !roles.contains(Role.ROLE_ARCHIVARIUS)) {
+            throw new ForbiddenException("Access denied. Archivarius or admin role is required.");
         }
 
         LocaleContextHolder.setLocale(adminUser.getLocale());
         User user = userService.getUser(userId);
-        libraryService.deleteRoleRequest(user, role);
-        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(page, size);
+        libraryService.confirmRoleRequest(user, role);
+        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(DEFAULT_PAGE_VALUE, DEFAULT_SIZE_VALUE);
         return ResponseEntity.ok(adminPanelPageDto);
     }
 

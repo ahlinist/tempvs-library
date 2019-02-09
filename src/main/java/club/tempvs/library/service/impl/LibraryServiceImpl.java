@@ -90,6 +90,12 @@ public class LibraryServiceImpl implements LibraryService {
                 .ifPresent(roleRequestService::deleteRoleRequest);
     }
 
+    @Override
+    public void confirmRoleRequest(User user, Role role) {
+        roleRequestService.findRoleRequest(user, role)
+                .ifPresent(roleRequestService::confirmRoleRequest);
+    }
+
     private WelcomePageDto getWelcomePage(User user, RoleRequest roleRequest) {
         List<Role> roles = user.getRoles();
 
