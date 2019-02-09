@@ -7,7 +7,9 @@ import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableScheduling
 @EnableJpaAuditing
 @EnableCircuitBreaker
 @EnableEurekaClient
@@ -33,4 +35,3 @@ public class LibraryApplication {
 		return connectionFactory;
 	}
 }
-

@@ -1,5 +1,6 @@
 package club.tempvs.library.amqp.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -15,8 +16,9 @@ public abstract class AbstractAMQPConnector {
     private static final int DELIVERY_TIMEOUT = 30000; //30 seconds
 
     protected final ConnectionFactory amqpConnectionFactory;
+    protected final ObjectMapper jacksonObjectMapper;
 
-    protected void execute(Consumer<String> action) {
+    protected void receive(Consumer<String> action) {
         Connection connection = null;
         Channel channel = null;
 

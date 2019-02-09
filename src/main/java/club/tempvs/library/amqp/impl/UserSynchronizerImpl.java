@@ -15,27 +15,25 @@ public class UserSynchronizerImpl extends AbstractAMQPConnector implements UserS
 
     private static final String LIBRARY_USER_AMQP_QUEUE = "library.user";
 
-    private final ObjectMapper jacksonObjectMapper;
     private final UserService userService;
 
     @Autowired
     public UserSynchronizerImpl(ObjectMapper jacksonObjectMapper,
                                 UserService userService,
                                 ConnectionFactory amqpConnectionFactory) {
-        super(amqpConnectionFactory);
+        super(amqpConnectionFactory, jacksonObjectMapper);
         this.userService = userService;
-        this.jacksonObjectMapper = jacksonObjectMapper;
     }
 
     public void execute() {
-        super.execute(jsonMessage -> refreshParticipant(jsonMessage));
+        super.receive(this::refreshUser);
     }
 
     protected String getQueue() {
         return LIBRARY_USER_AMQP_QUEUE;
     }
 
-    private void refreshParticipant(String json) {
+    private void refreshUser(String json) {
         try {
             UserDto userDto = jacksonObjectMapper.readValue(json, UserDto.class);
             userService.saveUser(userDto);
