@@ -1,6 +1,7 @@
 package club.tempvs.library;
 
 import com.rabbitmq.client.ConnectionFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
@@ -16,8 +17,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 public class LibraryApplication {
 
-	private static final int AMQP_CONNECTION_TIMEOUT = 30000;
-	private static final String CLOUDAMQP_URL = System.getenv("CLOUDAMQP_URL");
+	@Value("${amqp.url}")
+	private String amqpUrl;
+	@Value("${amqp.timeout}")
+	private int amqpTimeout;
 
 	public static void main(String[] args) {
 		SpringApplication.run(LibraryApplication.class, args);
@@ -27,9 +30,9 @@ public class LibraryApplication {
 	public ConnectionFactory amqpConnectionFactory() throws Exception {
 		ConnectionFactory connectionFactory = new ConnectionFactory();
 
-		if (CLOUDAMQP_URL != null) {
-			connectionFactory.setUri(CLOUDAMQP_URL);
-			connectionFactory.setConnectionTimeout(AMQP_CONNECTION_TIMEOUT);
+		if (amqpUrl != null) {
+			connectionFactory.setUri(amqpUrl);
+			connectionFactory.setConnectionTimeout(amqpTimeout);
 		}
 
 		return connectionFactory;

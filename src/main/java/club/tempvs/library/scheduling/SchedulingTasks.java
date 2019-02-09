@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(value = "scheduling.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "amqp.enabled", havingValue = "true")
 public class SchedulingTasks {
 
     private final UserSynchronizer userSynchronizer;

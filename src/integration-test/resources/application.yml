@@ -3,3 +3,6 @@ spring:
     enabled: false
 authorization:
   token: security_token
+amqp:
+  url: amqp://login:pass@host/login
+  timeout: 30000

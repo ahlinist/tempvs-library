@@ -40,8 +40,10 @@ eureka:
 security:
   user:
     password: ${eureka.password}
-scheduling:
+amqp:
   enabled: true
+  url: ${CLOUDAMQP_URL}
+  timeout: 30000
 ---
 spring:
   profiles: local
