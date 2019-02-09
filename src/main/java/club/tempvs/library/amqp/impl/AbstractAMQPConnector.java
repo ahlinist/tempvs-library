@@ -6,7 +6,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 
 import java.io.IOException;
 import java.util.function.Consumer;
