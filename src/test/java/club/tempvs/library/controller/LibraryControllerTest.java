@@ -40,15 +40,6 @@ public class LibraryControllerTest {
     }
 
     @Test
-    public void testPing() {
-        String pong = "pong!";
-
-        String result = libraryController.getPong();
-
-        assertEquals("'pong!' is returned", pong, result);
-    }
-
-    @Test
     public void testGetWelcomePage() {
         UserInfoDto userInfoDto = new UserInfoDto();
         User user = new User(userInfoDto);

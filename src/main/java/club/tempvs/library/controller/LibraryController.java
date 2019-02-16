@@ -41,11 +41,6 @@ public class LibraryController {
     private final LibraryService libraryService;
     private final UserService userService;
 
-    @GetMapping("/ping")
-    public String getPong() {
-        return "pong!";
-    }
-
     @GetMapping("/library")
     public ResponseEntity getWelcomePage(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto) {

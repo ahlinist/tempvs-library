@@ -22,7 +22,6 @@ import java.util.Arrays;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -50,14 +49,6 @@ public class LibraryControllerIntegrationTest {
     @BeforeClass
     public static void setupSpec() {
         mapper.registerModule(new JavaTimeModule());
-    }
-
-    @Test
-    public void testGetPong() throws Exception {
-        mvc.perform(get("/api/ping").accept(TEXT_PLAIN)
-                .header(AUTHORIZATION_HEADER, TOKEN))
-                .andExpect(status().isOk())
-                .andExpect(content().string(equalTo("pong!")));
     }
 
     @Test
