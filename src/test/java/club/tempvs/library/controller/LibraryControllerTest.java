@@ -11,7 +11,6 @@ import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.service.LibraryService;
 import club.tempvs.library.service.UserService;
-import club.tempvs.library.util.AuthHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,12 +23,8 @@ import java.util.Arrays;
 @RunWith(MockitoJUnitRunner.class)
 public class LibraryControllerTest {
 
-    private static final String TOKEN = "token";
-
     private LibraryController libraryController;
 
-    @Mock
-    private AuthHelper authHelper;
     @Mock
     private LibraryService libraryService;
     @Mock
@@ -41,7 +36,7 @@ public class LibraryControllerTest {
 
     @Before
     public void setup() {
-        libraryController = new LibraryController(authHelper, libraryService, userService);
+        libraryController = new LibraryController(libraryService, userService);
     }
 
     @Test
@@ -60,7 +55,7 @@ public class LibraryControllerTest {
 
         when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
 
-        ResponseEntity result = libraryController.getWelcomePage(userInfoDto, TOKEN);
+        ResponseEntity result = libraryController.getWelcomePage(userInfoDto);
 
         verify(libraryService).getWelcomePage(user);
         verifyNoMoreInteractions(libraryService);
@@ -78,7 +73,7 @@ public class LibraryControllerTest {
 
         when(libraryService.requestRole(user, role)).thenReturn(welcomePageDto);
 
-        ResponseEntity result = libraryController.requestRole(userInfoDto, TOKEN, role);
+        ResponseEntity result = libraryController.requestRole(userInfoDto, role);
 
         verify(libraryService).requestRole(user, role);
         verifyNoMoreInteractions(libraryService);
@@ -96,7 +91,7 @@ public class LibraryControllerTest {
 
         when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
 
-        ResponseEntity result = libraryController.cancelRoleRequest(userInfoDto, TOKEN, role);
+        ResponseEntity result = libraryController.cancelRoleRequest(userInfoDto, role);
 
         verify(libraryService).deleteRoleRequest(user, role);
         verify(libraryService).getWelcomePage(user);
@@ -116,7 +111,7 @@ public class LibraryControllerTest {
 
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        ResponseEntity result = libraryController.getAdminPanelPage(userInfoDto, TOKEN, page, size);
+        ResponseEntity result = libraryController.getAdminPanelPage(userInfoDto, page, size);
 
         verify(libraryService).getAdminPanelPage(page, size);
         verifyNoMoreInteractions(libraryService);
@@ -133,7 +128,7 @@ public class LibraryControllerTest {
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setRoles(Arrays.asList("ROLE_ARCHIVARIUS"));
 
-        libraryController.getAdminPanelPage(userInfoDto, TOKEN, page, size);
+        libraryController.getAdminPanelPage(userInfoDto, page, size);
     }
 
     @Test(expected = ForbiddenException.class)
@@ -142,7 +137,7 @@ public class LibraryControllerTest {
         int size = 40;
         UserInfoDto userInfoDto = new UserInfoDto();
 
-        libraryController.getAdminPanelPage(userInfoDto, TOKEN, page, size);
+        libraryController.getAdminPanelPage(userInfoDto, page, size);
     }
 
     @Test
@@ -158,7 +153,7 @@ public class LibraryControllerTest {
         when(userService.getUser(userId)).thenReturn(user);
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        ResponseEntity result = libraryController.denyRoleRequest(userInfoDto, TOKEN, role, userId);
+        ResponseEntity result = libraryController.denyRoleRequest(userInfoDto, role, userId);
 
         verify(userService).getUser(userId);
         verify(libraryService).deleteRoleRequest(user, role);
@@ -177,7 +172,7 @@ public class LibraryControllerTest {
         Role role = Role.ROLE_SCRIBE;
         Long userId = 1L;
 
-        libraryController.denyRoleRequest(userInfoDto, TOKEN, role, userId);
+        libraryController.denyRoleRequest(userInfoDto, role, userId);
     }
 
     @Test
@@ -193,7 +188,7 @@ public class LibraryControllerTest {
         when(userService.getUser(userId)).thenReturn(user);
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        ResponseEntity result = libraryController.confirmRoleRequest(userInfoDto, TOKEN, role, userId);
+        ResponseEntity result = libraryController.confirmRoleRequest(userInfoDto, role, userId);
 
         verify(userService).getUser(userId);
         verify(libraryService).confirmRoleRequest(user, role);
@@ -212,6 +207,6 @@ public class LibraryControllerTest {
         Role role = Role.ROLE_SCRIBE;
         Long userId = 1L;
 
-        libraryController.confirmRoleRequest(userInfoDto, TOKEN, role, userId);
+        libraryController.confirmRoleRequest(userInfoDto, role, userId);
     }
 }

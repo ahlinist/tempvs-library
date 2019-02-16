@@ -54,7 +54,8 @@ public class LibraryControllerIntegrationTest {
 
     @Test
     public void testGetPong() throws Exception {
-        mvc.perform(get("/api/ping").accept(TEXT_PLAIN))
+        mvc.perform(get("/api/ping").accept(TEXT_PLAIN)
+                .header(AUTHORIZATION_HEADER, TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(content().string(equalTo("pong!")));
     }

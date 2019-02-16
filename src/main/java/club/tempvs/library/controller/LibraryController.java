@@ -9,7 +9,6 @@ import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.service.LibraryService;
 import club.tempvs.library.service.UserService;
-import club.tempvs.library.util.AuthHelper;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -31,7 +30,6 @@ public class LibraryController {
     private static final Logger LOGGER = LoggerFactory.getLogger(LibraryController.class);
 
     private static final String USER_INFO_HEADER = "User-Info";
-    private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String PAGE_PARAM = "page";
     private static final String SIZE_PARAM = "size";
     private static final String DEFAULT_PAGE_PARAM = "0";
@@ -40,7 +38,6 @@ public class LibraryController {
     private static final int DEFAULT_SIZE_VALUE = 40;
     private static final int MAX_PAGE_SIZE = 40;
 
-    private final AuthHelper authHelper;
     private final LibraryService libraryService;
     private final UserService userService;
 
@@ -51,9 +48,7 @@ public class LibraryController {
 
     @GetMapping("/library")
     public ResponseEntity getWelcomePage(
-            @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
-            @RequestHeader(AUTHORIZATION_HEADER) String token) {
-        authHelper.authenticate(token);
+            @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto) {
         User user = new User(userInfoDto);
         WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
         return ResponseEntity.ok(welcomePageDto);
@@ -62,9 +57,7 @@ public class LibraryController {
     @PostMapping("/library/role/{role}")
     public ResponseEntity requestRole(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
-            @RequestHeader(AUTHORIZATION_HEADER) String token,
             @PathVariable("role") Role role) {
-        authHelper.authenticate(token);
         User user = new User(userInfoDto);
         WelcomePageDto welcomePageDto = libraryService.requestRole(user, role);
         return ResponseEntity.ok(welcomePageDto);
@@ -74,9 +67,7 @@ public class LibraryController {
     @DeleteMapping("/library/role/{role}")
     public ResponseEntity cancelRoleRequest(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
-            @RequestHeader(AUTHORIZATION_HEADER) String token,
             @PathVariable("role") Role role) {
-        authHelper.authenticate(token);
         User user = new User(userInfoDto);
         libraryService.deleteRoleRequest(user, role);
         WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
@@ -86,10 +77,8 @@ public class LibraryController {
     @GetMapping("/library/admin")
     public ResponseEntity getAdminPanelPage(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
-            @RequestHeader(AUTHORIZATION_HEADER) String token,
             @RequestParam(value = PAGE_PARAM, required = false, defaultValue = DEFAULT_PAGE_PARAM) int page,
             @RequestParam(value = SIZE_PARAM, required = false, defaultValue = DEFAULT_SIZE_PARAM) int size) {
-        authHelper.authenticate(token);
         User user = new User(userInfoDto);
         List<Role> roles = user.getRoles();
 
@@ -109,10 +98,8 @@ public class LibraryController {
     @DeleteMapping("/library/{role}/{userId}")
     public ResponseEntity denyRoleRequest(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
-            @RequestHeader(AUTHORIZATION_HEADER) String token,
             @PathVariable("role") Role role,
             @PathVariable("userId") Long userId) {
-        authHelper.authenticate(token);
         User adminUser = new User(userInfoDto);
         List<Role> roles = adminUser.getRoles();
 
@@ -130,10 +117,8 @@ public class LibraryController {
     @PostMapping("/library/{role}/{userId}")
     public ResponseEntity confirmRoleRequest(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
-            @RequestHeader(AUTHORIZATION_HEADER) String token,
             @PathVariable("role") Role role,
             @PathVariable("userId") Long userId) {
-        authHelper.authenticate(token);
         User adminUser = new User(userInfoDto);
         List<Role> roles = adminUser.getRoles();
 
