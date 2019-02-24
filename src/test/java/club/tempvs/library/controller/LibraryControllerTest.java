@@ -95,16 +95,6 @@ public class LibraryControllerTest {
         assertEquals("The result is a role request", adminPanelPageDto, result);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testGetAdminPanelPageForInvalidPageSize() {
-        int page = 1;
-        int size = 41;
-        UserInfoDto userInfoDto = new UserInfoDto();
-        userInfoDto.setRoles(Arrays.asList("ROLE_ARCHIVARIUS"));
-
-        libraryController.getAdminPanelPage(page, size);
-    }
-
     @Test
     public void testDenyRoleRequest() {
         int page = 0;
