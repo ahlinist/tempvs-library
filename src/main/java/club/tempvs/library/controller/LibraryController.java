@@ -1,7 +1,6 @@
 package club.tempvs.library.controller;
 
-import club.tempvs.library.api.ForbiddenException;
-import club.tempvs.library.api.UnauthorizedException;
+import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.dto.AdminPanelPageDto;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.User;
@@ -9,25 +8,17 @@ import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.service.LibraryService;
 import club.tempvs.library.service.UserService;
-import com.netflix.hystrix.exception.HystrixRuntimeException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class LibraryController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LibraryController.class);
 
     private static final String USER_INFO_HEADER = "User-Info";
     private static final String PAGE_PARAM = "page";
@@ -126,38 +117,5 @@ public class LibraryController {
         libraryService.confirmRoleRequest(user, role);
         AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(DEFAULT_PAGE_VALUE, DEFAULT_SIZE_VALUE);
         return ResponseEntity.ok(adminPanelPageDto);
-    }
-
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String returnInternalError(Exception e) {
-        return processException(e);
-    }
-
-    @ExceptionHandler(UnauthorizedException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public String returnUnauthorized(UnauthorizedException e) {
-        return processException(e);
-    }
-
-    @ExceptionHandler(ForbiddenException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public String returnForbidden(ForbiddenException e) {
-        return processException(e);
-    }
-
-    @ExceptionHandler(HystrixRuntimeException.class)
-    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
-    public String returnServiceUnavailable(HystrixRuntimeException e) {
-        return processException(e);
-    }
-
-    private String processException(Exception e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        String stackTraceString = sw.toString();
-        LOGGER.error(stackTraceString);
-        return e.getMessage();
     }
 }

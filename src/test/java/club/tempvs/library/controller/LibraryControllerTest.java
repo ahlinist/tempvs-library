@@ -3,7 +3,7 @@ package club.tempvs.library.controller;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import club.tempvs.library.api.ForbiddenException;
+import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.dto.AdminPanelPageDto;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.User;
