@@ -4,12 +4,14 @@ import static java.util.stream.Collectors.toList;
 
 import club.tempvs.library.dto.AdminPanelPageDto;
 import club.tempvs.library.dto.RoleRequestDto;
+import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.RoleRequest;
 import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.service.LibraryService;
 import club.tempvs.library.service.RoleRequestService;
+import club.tempvs.library.holder.UserHolder;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -57,20 +59,30 @@ public class LibraryServiceImpl implements LibraryService {
 
     private final MessageSource messageSource;
     private final RoleRequestService roleRequestService;
+    private final UserHolder userHolder;
 
     @Override
-    public WelcomePageDto getWelcomePage(User user) {
+    public WelcomePageDto getWelcomePage() {
+        User user = userHolder.getUser();
         return getWelcomePage(user, null);
     }
 
     @Override
-    public WelcomePageDto requestRole(User user, Role role) {
+    public WelcomePageDto requestRole(Role role) {
+        User user = userHolder.getUser();
         RoleRequest roleRequest = roleRequestService.createRoleRequest(user, role);
         return getWelcomePage(user, roleRequest);
     }
 
     @Override
     public AdminPanelPageDto getAdminPanelPage(int page, int size) {
+        User user = userHolder.getUser();
+        List<Role> roles = user.getRoles();
+
+        if (!roles.contains(Role.ROLE_ADMIN) && !roles.contains(Role.ROLE_ARCHIVARIUS)) {
+            throw new ForbiddenException("Access denied. Archivarius or admin role is required.");
+        }
+
         List<RoleRequest> roleRequests = roleRequestService.getRoleRequests(page, size);
 
         List<RoleRequestDto> roleRequestDtos = roleRequests.stream()
@@ -85,13 +97,32 @@ public class LibraryServiceImpl implements LibraryService {
     }
 
     @Override
-    public void deleteRoleRequest(User user, Role role) {
+    public void cancelRoleRequest(Role role) {
+        User user = userHolder.getUser();
+        roleRequestService.findRoleRequest(user, role)
+                .ifPresent(roleRequestService::deleteRoleRequest);
+    }
+
+    @Override
+    public void denyRoleRequest(User user, Role role) {
+        List<Role> roles = userHolder.getUser().getRoles();
+
+        if (!roles.contains(Role.ROLE_ADMIN) && !roles.contains(Role.ROLE_ARCHIVARIUS)) {
+            throw new ForbiddenException("Access denied. Archivarius or admin role is required.");
+        }
+
         roleRequestService.findRoleRequest(user, role)
                 .ifPresent(roleRequestService::deleteRoleRequest);
     }
 
     @Override
     public void confirmRoleRequest(User user, Role role) {
+        List<Role> roles = userHolder.getUser().getRoles();
+
+        if (!roles.contains(Role.ROLE_ADMIN) && !roles.contains(Role.ROLE_ARCHIVARIUS)) {
+            throw new ForbiddenException("Access denied. Archivarius or admin role is required.");
+        }
+
         roleRequestService.findRoleRequest(user, role)
                 .ifPresent(roleRequestService::confirmRoleRequest);
     }
@@ -100,7 +131,7 @@ public class LibraryServiceImpl implements LibraryService {
         List<Role> roles = user.getRoles();
 
         if (roles.contains(Role.ROLE_ADMIN) || roles.contains(Role.ROLE_ARCHIVARIUS)) {
-            return getArchivariusWelcomePage(user);
+            return getArchivariusWelcomePage();
         } else if (roles.contains(Role.ROLE_SCRIBE)) {
             return getUserWelcomePage(user, Role.ROLE_SCRIBE, roleRequest);
         } else if (roles.contains(Role.ROLE_CONTRIBUTOR)) {
@@ -110,9 +141,9 @@ public class LibraryServiceImpl implements LibraryService {
         }
     }
 
-    private WelcomePageDto getArchivariusWelcomePage(User user) {
+    private WelcomePageDto getArchivariusWelcomePage() {
         Map<String, String> actionMap = ROLE_ACTIONS.get(Role.ROLE_ARCHIVARIUS);
-        Locale locale = user.getLocale();
+        Locale locale = LocaleContextHolder.getLocale();
         String greetingKey = actionMap.get(GREETING_KEY);
         String greeting = messageSource.getMessage(greetingKey, null, greetingKey, locale);
         String buttonText = messageSource.getMessage(ADMIN_PANEL_BUTTON, null, ADMIN_PANEL_BUTTON, locale);
@@ -122,7 +153,7 @@ public class LibraryServiceImpl implements LibraryService {
 
     private WelcomePageDto getUserWelcomePage(User user, Role role, RoleRequest roleRequest) {
         Map<String, String> actionMap = ROLE_ACTIONS.get(role);
-        Locale locale = user.getLocale();
+        Locale locale = LocaleContextHolder.getLocale();
         Role roleToRequest = Role.valueOf(actionMap.get(REQUESTED_ROLE_KEY));
 
         boolean isRoleRequestAvailable = Optional.ofNullable(roleRequest)

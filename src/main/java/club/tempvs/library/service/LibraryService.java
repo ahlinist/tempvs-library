@@ -7,13 +7,15 @@ import club.tempvs.library.dto.WelcomePageDto;
 
 public interface LibraryService {
 
-    WelcomePageDto getWelcomePage(User user);
+    WelcomePageDto getWelcomePage();
 
-    WelcomePageDto requestRole(User user, Role role);
+    WelcomePageDto requestRole(Role role);
 
     AdminPanelPageDto getAdminPanelPage(int page, int size);
 
-    void deleteRoleRequest(User user, Role role);
+    void cancelRoleRequest(Role role);
+
+    void denyRoleRequest(User user, Role role);
 
     void confirmRoleRequest(User user, Role role);
 }

@@ -3,7 +3,6 @@ package club.tempvs.library.controller;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.dto.AdminPanelPageDto;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.domain.User;
@@ -16,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
 
@@ -41,14 +39,11 @@ public class LibraryControllerTest {
 
     @Test
     public void testGetWelcomePage() {
-        UserInfoDto userInfoDto = new UserInfoDto();
-        User user = new User(userInfoDto);
+        when(libraryService.getWelcomePage()).thenReturn(welcomePageDto);
 
-        when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
+        WelcomePageDto result = libraryController.getWelcomePage();
 
-        WelcomePageDto result = libraryController.getWelcomePage(userInfoDto);
-
-        verify(libraryService).getWelcomePage(user);
+        verify(libraryService).getWelcomePage();
         verifyNoMoreInteractions(libraryService);
 
         assertEquals("The result is a role request", welcomePageDto, result);
@@ -56,15 +51,13 @@ public class LibraryControllerTest {
 
     @Test
     public void testRequestRole() {
-        UserInfoDto userInfoDto = new UserInfoDto();
-        User user = new User(userInfoDto);
         Role role = Role.ROLE_CONTRIBUTOR;
 
-        when(libraryService.requestRole(user, role)).thenReturn(welcomePageDto);
+        when(libraryService.requestRole(role)).thenReturn(welcomePageDto);
 
-        WelcomePageDto result = libraryController.requestRole(userInfoDto, role);
+        WelcomePageDto result = libraryController.requestRole(role);
 
-        verify(libraryService).requestRole(user, role);
+        verify(libraryService).requestRole(role);
         verifyNoMoreInteractions(libraryService);
 
         assertEquals("The result is a role request", welcomePageDto, result);
@@ -72,16 +65,14 @@ public class LibraryControllerTest {
 
     @Test
     public void testCancelRoleRequest() {
-        UserInfoDto userInfoDto = new UserInfoDto();
-        User user = new User(userInfoDto);
         Role role = Role.ROLE_SCRIBE;
 
-        when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
+        when(libraryService.getWelcomePage()).thenReturn(welcomePageDto);
 
-        WelcomePageDto result = libraryController.cancelRoleRequest(userInfoDto, role);
+        WelcomePageDto result = libraryController.cancelRoleRequest(role);
 
-        verify(libraryService).deleteRoleRequest(user, role);
-        verify(libraryService).getWelcomePage(user);
+        verify(libraryService).cancelRoleRequest(role);
+        verify(libraryService).getWelcomePage();
         verifyNoMoreInteractions(libraryService);
 
         assertEquals("The result is a role request", welcomePageDto, result);
@@ -96,7 +87,7 @@ public class LibraryControllerTest {
 
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        AdminPanelPageDto result = libraryController.getAdminPanelPage(userInfoDto, page, size);
+        AdminPanelPageDto result = libraryController.getAdminPanelPage(page, size);
 
         verify(libraryService).getAdminPanelPage(page, size);
         verifyNoMoreInteractions(libraryService);
@@ -111,16 +102,7 @@ public class LibraryControllerTest {
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setRoles(Arrays.asList("ROLE_ARCHIVARIUS"));
 
-        libraryController.getAdminPanelPage(userInfoDto, page, size);
-    }
-
-    @Test(expected = ForbiddenException.class)
-    public void testGetAdminPanelPageForInsufficientAuthorities() {
-        int page = 1;
-        int size = 40;
-        UserInfoDto userInfoDto = new UserInfoDto();
-
-        libraryController.getAdminPanelPage(userInfoDto, page, size);
+        libraryController.getAdminPanelPage(page, size);
     }
 
     @Test
@@ -136,24 +118,14 @@ public class LibraryControllerTest {
         when(userService.getUser(userId)).thenReturn(user);
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        AdminPanelPageDto result = libraryController.denyRoleRequest(userInfoDto, role, userId);
+        AdminPanelPageDto result = libraryController.denyRoleRequest(role, userId);
 
         verify(userService).getUser(userId);
-        verify(libraryService).deleteRoleRequest(user, role);
+        verify(libraryService).denyRoleRequest(user, role);
         verify(libraryService).getAdminPanelPage(page, size);
         verifyNoMoreInteractions(userService, libraryService);
 
         assertEquals("The result is a role request", adminPanelPageDto, result);
-    }
-
-    @Test(expected = ForbiddenException.class)
-    public void testDenyRoleRequestForInsufficientAuthorities() {
-        UserInfoDto userInfoDto = new UserInfoDto();
-        userInfoDto.setRoles(Arrays.asList("ROLE_SCRIBE"));
-        Role role = Role.ROLE_SCRIBE;
-        Long userId = 1L;
-
-        libraryController.denyRoleRequest(userInfoDto, role, userId);
     }
 
     @Test
@@ -169,7 +141,7 @@ public class LibraryControllerTest {
         when(userService.getUser(userId)).thenReturn(user);
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        AdminPanelPageDto result = libraryController.confirmRoleRequest(userInfoDto, role, userId);
+        AdminPanelPageDto result = libraryController.confirmRoleRequest(role, userId);
 
         verify(userService).getUser(userId);
         verify(libraryService).confirmRoleRequest(user, role);
@@ -177,15 +149,5 @@ public class LibraryControllerTest {
         verifyNoMoreInteractions(userService, libraryService);
 
         assertEquals("The result is a role request", adminPanelPageDto, result);
-    }
-
-    @Test(expected = ForbiddenException.class)
-    public void testConfirmRoleRequestForInsufficientAuthorities() {
-        UserInfoDto userInfoDto = new UserInfoDto();
-        userInfoDto.setRoles(Arrays.asList("ROLE_SCRIBE"));
-        Role role = Role.ROLE_SCRIBE;
-        Long userId = 1L;
-
-        libraryController.confirmRoleRequest(userInfoDto, role, userId);
     }
 }

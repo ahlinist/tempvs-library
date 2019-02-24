@@ -1,4 +1,4 @@
-package club.tempvs.library.auth;
+package club.tempvs.library.interceptor;
 
 import club.tempvs.library.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Value;
