@@ -121,7 +121,7 @@ public class LibraryControllerIntegrationTest {
         createRoleRequest(user, Role.ROLE_CONTRIBUTOR);
         createRoleRequest(user, Role.ROLE_SCRIBE);
 
-        mvc.perform(get("/api/library/admin")
+        mvc.perform(get("/api/library/admin?page=0&size=40")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -145,12 +145,25 @@ public class LibraryControllerIntegrationTest {
         Long id = 1L;
         String userInfoValue = buildUserInfoValue(id);
 
-        mvc.perform(get("/api/library/admin")
+        mvc.perform(get("/api/library/admin?page=0&size=40")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
                 .header(AUTHORIZATION_HEADER, TOKEN))
-                .andExpect(status().isForbidden());
+                    .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testAdminPanelPageForIncorrectPagination() throws Exception {
+        Long id = 1L;
+        String userInfoValue = buildUserInfoValue(id, Role.ROLE_ARCHIVARIUS);
+
+        mvc.perform(get("/api/library/admin?page=0&size=41")
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                    .andExpect(status().isInternalServerError());
     }
 
     @Test

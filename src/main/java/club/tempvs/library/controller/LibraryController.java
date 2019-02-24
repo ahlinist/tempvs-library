@@ -7,20 +7,21 @@ import club.tempvs.library.dto.WelcomePageDto;
 import club.tempvs.library.service.LibraryService;
 import club.tempvs.library.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.Max;
 
 @RestController
 @RequestMapping("/api/library")
 @RequiredArgsConstructor
+@Validated
 public class LibraryController {
 
     private static final String PAGE_PARAM = "page";
     private static final String SIZE_PARAM = "size";
-    private static final String DEFAULT_PAGE_PARAM = "0";
     private static final int DEFAULT_PAGE_VALUE = 0;
-    private static final String DEFAULT_SIZE_PARAM = "40";
     private static final int DEFAULT_SIZE_VALUE = 40;
-    private static final int MAX_PAGE_SIZE = 40;
 
     private final LibraryService libraryService;
     private final UserService userService;
@@ -43,12 +44,8 @@ public class LibraryController {
 
     @GetMapping("/admin")
     public AdminPanelPageDto getAdminPanelPage(
-            @RequestParam(value = PAGE_PARAM, required = false, defaultValue = DEFAULT_PAGE_PARAM) int page,
-            @RequestParam(value = SIZE_PARAM, required = false, defaultValue = DEFAULT_SIZE_PARAM) int size) {
-        if (size > MAX_PAGE_SIZE) {
-            throw new IllegalArgumentException("Page size must not be larger than " + MAX_PAGE_SIZE + "!");
-        }
-
+            @RequestParam(PAGE_PARAM) int page,
+            @Max(40) @RequestParam(SIZE_PARAM) int size) {
         return libraryService.getAdminPanelPage(page, size);
     }
 
