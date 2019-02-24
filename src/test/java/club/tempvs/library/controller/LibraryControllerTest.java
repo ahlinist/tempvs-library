@@ -46,14 +46,12 @@ public class LibraryControllerTest {
 
         when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
 
-        ResponseEntity result = libraryController.getWelcomePage(userInfoDto);
+        WelcomePageDto result = libraryController.getWelcomePage(userInfoDto);
 
         verify(libraryService).getWelcomePage(user);
         verifyNoMoreInteractions(libraryService);
 
-        WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
-        assertEquals("The result is a role request", welcomePageDto, resultDto);
-        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+        assertEquals("The result is a role request", welcomePageDto, result);
     }
 
     @Test
@@ -64,14 +62,12 @@ public class LibraryControllerTest {
 
         when(libraryService.requestRole(user, role)).thenReturn(welcomePageDto);
 
-        ResponseEntity result = libraryController.requestRole(userInfoDto, role);
+        WelcomePageDto result = libraryController.requestRole(userInfoDto, role);
 
         verify(libraryService).requestRole(user, role);
         verifyNoMoreInteractions(libraryService);
 
-        WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
-        assertEquals("The result is a role request", welcomePageDto, resultDto);
-        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+        assertEquals("The result is a role request", welcomePageDto, result);
     }
 
     @Test
@@ -82,15 +78,13 @@ public class LibraryControllerTest {
 
         when(libraryService.getWelcomePage(user)).thenReturn(welcomePageDto);
 
-        ResponseEntity result = libraryController.cancelRoleRequest(userInfoDto, role);
+        WelcomePageDto result = libraryController.cancelRoleRequest(userInfoDto, role);
 
         verify(libraryService).deleteRoleRequest(user, role);
         verify(libraryService).getWelcomePage(user);
         verifyNoMoreInteractions(libraryService);
 
-        WelcomePageDto resultDto = (WelcomePageDto) result.getBody();
-        assertEquals("The result is a role request", welcomePageDto, resultDto);
-        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+        assertEquals("The result is a role request", welcomePageDto, result);
     }
 
     @Test
@@ -102,14 +96,12 @@ public class LibraryControllerTest {
 
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        ResponseEntity result = libraryController.getAdminPanelPage(userInfoDto, page, size);
+        AdminPanelPageDto result = libraryController.getAdminPanelPage(userInfoDto, page, size);
 
         verify(libraryService).getAdminPanelPage(page, size);
         verifyNoMoreInteractions(libraryService);
 
-        AdminPanelPageDto resultDto = (AdminPanelPageDto) result.getBody();
-        assertEquals("The result is a role request", adminPanelPageDto, resultDto);
-        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+        assertEquals("The result is a role request", adminPanelPageDto, result);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -144,16 +136,14 @@ public class LibraryControllerTest {
         when(userService.getUser(userId)).thenReturn(user);
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        ResponseEntity result = libraryController.denyRoleRequest(userInfoDto, role, userId);
+        AdminPanelPageDto result = libraryController.denyRoleRequest(userInfoDto, role, userId);
 
         verify(userService).getUser(userId);
         verify(libraryService).deleteRoleRequest(user, role);
         verify(libraryService).getAdminPanelPage(page, size);
         verifyNoMoreInteractions(userService, libraryService);
 
-        AdminPanelPageDto resultDto = (AdminPanelPageDto) result.getBody();
-        assertEquals("The result is a role request", adminPanelPageDto, resultDto);
-        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+        assertEquals("The result is a role request", adminPanelPageDto, result);
     }
 
     @Test(expected = ForbiddenException.class)
@@ -179,16 +169,14 @@ public class LibraryControllerTest {
         when(userService.getUser(userId)).thenReturn(user);
         when(libraryService.getAdminPanelPage(page, size)).thenReturn(adminPanelPageDto);
 
-        ResponseEntity result = libraryController.confirmRoleRequest(userInfoDto, role, userId);
+        AdminPanelPageDto result = libraryController.confirmRoleRequest(userInfoDto, role, userId);
 
         verify(userService).getUser(userId);
         verify(libraryService).confirmRoleRequest(user, role);
         verify(libraryService).getAdminPanelPage(page, size);
         verifyNoMoreInteractions(userService, libraryService);
 
-        AdminPanelPageDto resultDto = (AdminPanelPageDto) result.getBody();
-        assertEquals("The result is a role request", adminPanelPageDto, resultDto);
-        assertEquals("The result is a role request", 200, result.getStatusCodeValue());
+        assertEquals("The result is a role request", adminPanelPageDto, result);
     }
 
     @Test(expected = ForbiddenException.class)

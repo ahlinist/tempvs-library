@@ -10,13 +10,12 @@ import club.tempvs.library.service.LibraryService;
 import club.tempvs.library.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/library")
 @RequiredArgsConstructor
 public class LibraryController {
 
@@ -32,36 +31,33 @@ public class LibraryController {
     private final LibraryService libraryService;
     private final UserService userService;
 
-    @GetMapping("/library")
-    public ResponseEntity getWelcomePage(
+    @GetMapping
+    public WelcomePageDto getWelcomePage(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto) {
         User user = new User(userInfoDto);
-        WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
-        return ResponseEntity.ok(welcomePageDto);
+        return libraryService.getWelcomePage(user);
     }
 
-    @PostMapping("/library/role/{role}")
-    public ResponseEntity requestRole(
+    @PostMapping("/role/{role}")
+    public WelcomePageDto requestRole(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
             @PathVariable("role") Role role) {
         User user = new User(userInfoDto);
-        WelcomePageDto welcomePageDto = libraryService.requestRole(user, role);
-        return ResponseEntity.ok(welcomePageDto);
+        return  libraryService.requestRole(user, role);
     }
 
 
-    @DeleteMapping("/library/role/{role}")
-    public ResponseEntity cancelRoleRequest(
+    @DeleteMapping("/role/{role}")
+    public WelcomePageDto cancelRoleRequest(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
             @PathVariable("role") Role role) {
         User user = new User(userInfoDto);
         libraryService.deleteRoleRequest(user, role);
-        WelcomePageDto welcomePageDto = libraryService.getWelcomePage(user);
-        return ResponseEntity.ok(welcomePageDto);
+        return libraryService.getWelcomePage(user);
     }
 
-    @GetMapping("/library/admin")
-    public ResponseEntity getAdminPanelPage(
+    @GetMapping("/admin")
+    public AdminPanelPageDto getAdminPanelPage(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
             @RequestParam(value = PAGE_PARAM, required = false, defaultValue = DEFAULT_PAGE_PARAM) int page,
             @RequestParam(value = SIZE_PARAM, required = false, defaultValue = DEFAULT_SIZE_PARAM) int size) {
@@ -77,12 +73,11 @@ public class LibraryController {
         }
 
         LocaleContextHolder.setLocale(user.getLocale());
-        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(page, size);
-        return ResponseEntity.ok(adminPanelPageDto);
+        return libraryService.getAdminPanelPage(page, size);
     }
 
-    @DeleteMapping("/library/{role}/{userId}")
-    public ResponseEntity denyRoleRequest(
+    @DeleteMapping("/{role}/{userId}")
+    public AdminPanelPageDto denyRoleRequest(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
             @PathVariable("role") Role role,
             @PathVariable("userId") Long userId) {
@@ -96,12 +91,11 @@ public class LibraryController {
         LocaleContextHolder.setLocale(adminUser.getLocale());
         User user = userService.getUser(userId);
         libraryService.deleteRoleRequest(user, role);
-        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(DEFAULT_PAGE_VALUE, DEFAULT_SIZE_VALUE);
-        return ResponseEntity.ok(adminPanelPageDto);
+        return libraryService.getAdminPanelPage(DEFAULT_PAGE_VALUE, DEFAULT_SIZE_VALUE);
     }
 
-    @PostMapping("/library/{role}/{userId}")
-    public ResponseEntity confirmRoleRequest(
+    @PostMapping("/{role}/{userId}")
+    public AdminPanelPageDto confirmRoleRequest(
             @RequestHeader(USER_INFO_HEADER) UserInfoDto userInfoDto,
             @PathVariable("role") Role role,
             @PathVariable("userId") Long userId) {
@@ -115,7 +109,6 @@ public class LibraryController {
         LocaleContextHolder.setLocale(adminUser.getLocale());
         User user = userService.getUser(userId);
         libraryService.confirmRoleRequest(user, role);
-        AdminPanelPageDto adminPanelPageDto = libraryService.getAdminPanelPage(DEFAULT_PAGE_VALUE, DEFAULT_SIZE_VALUE);
-        return ResponseEntity.ok(adminPanelPageDto);
+        return libraryService.getAdminPanelPage(DEFAULT_PAGE_VALUE, DEFAULT_SIZE_VALUE);
     }
 }
