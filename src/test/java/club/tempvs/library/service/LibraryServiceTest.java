@@ -146,7 +146,6 @@ public class LibraryServiceTest {
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
-        when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(USER_GREETING, null, USER_GREETING, LOCALE)).thenReturn(greeting);
         when(roleRequestService.findRoleRequest(user, Role.ROLE_CONTRIBUTOR)).thenReturn(Optional.of(roleRequest));
         when(messageSource.getMessage(CANCEL_CONTRIBUTOR_BUTTON, null, CANCEL_CONTRIBUTOR_BUTTON, LOCALE))
@@ -175,7 +174,6 @@ public class LibraryServiceTest {
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
-        when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(CONTRIBUTOR_GREETING, null, CONTRIBUTOR_GREETING, LOCALE)).thenReturn(greeting);
         when(roleRequestService.findRoleRequest(user, Role.ROLE_SCRIBE)).thenReturn(Optional.empty());
         when(messageSource.getMessage(REQUEST_SCRIBE_BUTTON, null, REQUEST_SCRIBE_BUTTON, LOCALE))
@@ -204,7 +202,6 @@ public class LibraryServiceTest {
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
-        when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(CONTRIBUTOR_GREETING, null, CONTRIBUTOR_GREETING, LOCALE)).thenReturn(greeting);
         when(roleRequestService.findRoleRequest(user, Role.ROLE_SCRIBE)).thenReturn(Optional.of(roleRequest));
         when(messageSource.getMessage(CANCEL_SCRIBE_BUTTON, null, CANCEL_SCRIBE_BUTTON, LOCALE))
@@ -233,7 +230,6 @@ public class LibraryServiceTest {
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
-        when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(SCRIBE_GREETING, null, SCRIBE_GREETING, LOCALE)).thenReturn(greeting);
         when(roleRequestService.findRoleRequest(user, Role.ROLE_ARCHIVARIUS)).thenReturn(Optional.empty());
         when(messageSource.getMessage(REQUEST_ARCHIVARIUS_BUTTON, null, REQUEST_ARCHIVARIUS_BUTTON, LOCALE))
@@ -261,7 +257,6 @@ public class LibraryServiceTest {
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
-        when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(SCRIBE_GREETING, null, SCRIBE_GREETING, LOCALE)).thenReturn(greeting);
         when(roleRequestService.findRoleRequest(user, Role.ROLE_ARCHIVARIUS)).thenReturn(Optional.of(roleRequest));
         when(messageSource.getMessage(CANCEL_ARCHIVARIUS_BUTTON, null, CANCEL_ARCHIVARIUS_BUTTON, LOCALE))
@@ -291,7 +286,6 @@ public class LibraryServiceTest {
         when(userHolder.getUser()).thenReturn(user);
         when(roleRequestService.createRoleRequest(user, role)).thenReturn(roleRequest);
         when(user.getRoles()).thenReturn(roles);
-        when(user.getLocale()).thenReturn(Locale.ENGLISH);
         when(messageSource.getMessage(CONTRIBUTOR_GREETING, null, CONTRIBUTOR_GREETING, LOCALE)).thenReturn(greeting);
         when(messageSource.getMessage(CANCEL_SCRIBE_BUTTON, null, CANCEL_SCRIBE_BUTTON, LOCALE))
                 .thenReturn(cancelScribeButton);
