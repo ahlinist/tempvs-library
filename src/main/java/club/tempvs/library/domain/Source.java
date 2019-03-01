@@ -1,16 +1,18 @@
 package club.tempvs.library.domain;
 
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Source {
@@ -18,26 +20,23 @@ public class Source {
     @Id
     @GeneratedValue
     private Long id;
-
+    @NotBlank
     private String name;
-
     private String description;
-
+    @NotNull
     private Classification classification;
-
+    @NotNull
     private Type type;
-
+    @NotNull
     private Period period;
-
     @ElementCollection
     private List<String> images = new ArrayList<>();
-
     @ElementCollection
     private List<Long> comments = new ArrayList<>();
-
     @CreatedDate
     private Instant createdDate;
 
+    @AllArgsConstructor
     public enum Classification {
 
         CLOTHING("classification.clothing"),
@@ -49,12 +48,9 @@ public class Source {
 
         @Getter
         String key;
-
-        Classification(String key) {
-            this.key = key;
-        }
     }
 
+    @AllArgsConstructor
     public enum Type {
 
         WRITTEN("type.written"),
@@ -64,12 +60,9 @@ public class Source {
 
         @Getter
         String key;
-
-        Type (String key) {
-            this.key = key;
-        }
     }
 
+    @AllArgsConstructor
     public enum Period {
 
         ANCIENT("period.ancient"),
@@ -86,9 +79,5 @@ public class Source {
 
         @Getter
         String key;
-
-        Period (String key) {
-            this.key = key;
-        }
     }
 }
