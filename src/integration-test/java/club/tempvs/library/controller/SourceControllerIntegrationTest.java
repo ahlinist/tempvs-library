@@ -22,6 +22,7 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Base64;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -111,6 +112,48 @@ public class SourceControllerIntegrationTest {
                     .andExpect(jsonPath("classification", is("Armor")))
                     .andExpect(jsonPath("type", is("Graphic")))
                     .andExpect(jsonPath("period", is("Contemporary")));
+    }
+
+    @Test
+    public void testFindSources() throws Exception {
+        File findSourceFile = ResourceUtils.getFile("classpath:source/find.json");
+        String findSourceJson = new String(Files.readAllBytes(findSourceFile.toPath()));
+        String encodedQuery = Base64.getEncoder().encodeToString(findSourceJson.getBytes());
+
+        Long userId = 1L;
+        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_USER);
+        createSource("name41", "desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES);
+        createSource("name11", "1desc", Classification.ARMOR, Type.GRAPHIC, Period.EARLY_MIDDLE_AGES);
+        createSource("name12", "desc2", Classification.CLOTHING, Type.WRITTEN, Period.CONTEMPORARY);
+        createSource("name13", "3desc", Classification.FOOTWEAR, Type.GRAPHIC, Period.EARLY_MIDDLE_AGES);
+        createSource("name32", "desc4", Classification.HOUSEHOLD, Type.GRAPHIC, Period.WWII);
+        createSource("name15", "5desc", Classification.HOUSEHOLD, Type.WRITTEN, Period.EARLY_MIDDLE_AGES);
+
+        mvc.perform(get("/api/source?q=" + encodedQuery)
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(3)))
+                    .andExpect(jsonPath("$[0].id", is(2)))
+                    .andExpect(jsonPath("$[0].name", is("name11")))
+                    .andExpect(jsonPath("$[0].description", is("1desc")))
+                    .andExpect(jsonPath("$[0].classification", is("Armor")))
+                    .andExpect(jsonPath("$[0].type", is("Graphic")))
+                    .andExpect(jsonPath("$[0].period", is("Early Middle Ages")))
+                    .andExpect(jsonPath("$[1].id", is(4)))
+                    .andExpect(jsonPath("$[1].name", is("name13")))
+                    .andExpect(jsonPath("$[1].description", is("3desc")))
+                    .andExpect(jsonPath("$[1].classification", is("Footwear")))
+                    .andExpect(jsonPath("$[1].type", is("Graphic")))
+                    .andExpect(jsonPath("$[1].period", is("Early Middle Ages")))
+                    .andExpect(jsonPath("$[2].id", is(6)))
+                    .andExpect(jsonPath("$[2].name", is("name15")))
+                    .andExpect(jsonPath("$[2].description", is("5desc")))
+                    .andExpect(jsonPath("$[2].classification", is("Household")))
+                    .andExpect(jsonPath("$[2].type", is("Written")))
+                    .andExpect(jsonPath("$[2].period", is("Early Middle Ages")));
     }
 
     private String buildUserInfoValue(Long id, Role role) throws Exception {

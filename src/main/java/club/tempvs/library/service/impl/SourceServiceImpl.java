@@ -2,8 +2,14 @@ package club.tempvs.library.service.impl;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static java.util.Objects.isNull;
+import static club.tempvs.library.domain.Source.Period;
+import static club.tempvs.library.domain.Source.Classification;
+import static club.tempvs.library.domain.Source.Type;
+import static java.util.stream.Collectors.toList;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import club.tempvs.library.dto.ErrorsDto;
+import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.dao.SourceRepository;
@@ -69,7 +75,7 @@ public class SourceServiceImpl implements SourceService {
             validationHelper.addError(errorsDto, PERIOD_FIELD, PERIOD_MISSING_ERROR);
         }
 
-        if (isNull(sourceDto.getPeriod())) {
+        if (isNull(sourceDto.getType())) {
             validationHelper.addError(errorsDto, TYPE_FIELD, TYPE_MISSING_ERROR);
         }
 
@@ -87,5 +93,41 @@ public class SourceServiceImpl implements SourceService {
         return sourceRepository.findById(id)
                 .map(source -> conversionService.convert(source, SourceDto.class))
                 .get();
+    }
+
+    @Override
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
+    })
+    public List<SourceDto> find(FindSourceDto findSourceDto) {
+        String query = findSourceDto.getQuery();
+
+        if (isBlank(query)) {
+            query = "";
+        }
+
+        Period period = findSourceDto.getPeriod();
+
+        if (period == null) {
+            throw new IllegalStateException("Period is not defined");
+        }
+
+        List<Classification> classifications = findSourceDto.getClassifications();
+
+        if (isEmpty(classifications)) {
+            classifications = Arrays.asList(Classification.values());
+        }
+
+        List<Type> types = findSourceDto.getTypes();
+
+        if (isEmpty(types)) {
+            types = Arrays.asList(Type.values());
+        }
+
+        List<Source> sources = sourceRepository.find(period, types, classifications, query);
+
+        return sources.stream()
+                .map(source -> conversionService.convert(source, SourceDto.class))
+                .collect(toList());
     }
 }

@@ -2,8 +2,10 @@ package club.tempvs.library.service;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
+import static club.tempvs.library.domain.Source.*;
 
 import club.tempvs.library.dto.ErrorsDto;
+import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.dao.SourceRepository;
@@ -58,9 +60,9 @@ public class SourceServiceTest {
         String sourceName = "lorica segmentata";
         SourceDto sourceDto = new SourceDto();
         sourceDto.setName(sourceName);
-        sourceDto.setClassification(Source.Classification.ARMOR.toString());
-        sourceDto.setType(Source.Type.ARCHAEOLOGICAL.toString());
-        sourceDto.setPeriod(Source.Period.ANTIQUITY.toString());
+        sourceDto.setClassification(Classification.ARMOR.toString());
+        sourceDto.setType(Type.ARCHAEOLOGICAL.toString());
+        sourceDto.setPeriod(Period.ANTIQUITY.toString());
         Source source = sourceDto.toSource();
 
         when(userHolder.getUser()).thenReturn(user);
@@ -126,6 +128,114 @@ public class SourceServiceTest {
 
         when(sourceRepository.findById(id)).thenReturn(Optional.empty());
 
-        SourceDto result = service.get(id);
+        service.get(id);
+    }
+
+    @Test
+    public void testFind() {
+        String query = "query";
+        Period period = Period.EARLY_MIDDLE_AGES;
+        List<Classification> classifications = Arrays.asList(Classification.ARMOR);
+        List<Type> types = Arrays.asList(Type.WRITTEN);
+        FindSourceDto findSourceDto = new FindSourceDto();
+        findSourceDto.setQuery(query);
+        findSourceDto.setPeriod(period);
+        findSourceDto.setClassifications(classifications);
+        findSourceDto.setTypes(types);
+        List<Source> sources = Arrays.asList(source, source);
+
+        when(sourceRepository.find(period, types, classifications, query)).thenReturn(sources);
+
+        List<SourceDto> result = service.find(findSourceDto);
+
+        verify(sourceRepository).find(period, types, classifications, query);
+        verify(conversionService, times(2)).convert(source, SourceDto.class);
+        verifyNoMoreInteractions(sourceRepository, source, conversionService);
+
+        assertEquals("2 sourceDtos are returned", 2, result.size());
+    }
+
+    @Test
+    public void testFindWithoutClassifications() {
+        String query = "query";
+        Period period = Period.EARLY_MIDDLE_AGES;
+        List<Classification> classifications = Arrays.asList(Classification.values());
+        List<Type> types = Arrays.asList(Type.WRITTEN);
+        FindSourceDto findSourceDto = new FindSourceDto();
+        findSourceDto.setQuery(query);
+        findSourceDto.setPeriod(period);
+        findSourceDto.setTypes(types);
+        List<Source> sources = Arrays.asList(source, source);
+
+        when(sourceRepository.find(period, types, classifications, query)).thenReturn(sources);
+
+        List<SourceDto> result = service.find(findSourceDto);
+
+        verify(sourceRepository).find(period, types, classifications, query);
+        verify(conversionService, times(2)).convert(source, SourceDto.class);
+        verifyNoMoreInteractions(sourceRepository, source, conversionService);
+
+        assertEquals("2 sourceDtos are returned", 2, result.size());
+    }
+
+    @Test
+    public void testFindWithoutTypes() {
+        String query = "query";
+        Period period = Period.EARLY_MIDDLE_AGES;
+        List<Classification> classifications = Arrays.asList(Classification.FOOTWEAR);
+        List<Type> types = Arrays.asList(Type.values());
+        FindSourceDto findSourceDto = new FindSourceDto();
+        findSourceDto.setQuery(query);
+        findSourceDto.setPeriod(period);
+        findSourceDto.setClassifications(classifications);
+        List<Source> sources = Arrays.asList(source, source);
+
+        when(sourceRepository.find(period, types, classifications, query)).thenReturn(sources);
+
+        List<SourceDto> result = service.find(findSourceDto);
+
+        verify(sourceRepository).find(period, types, classifications, query);
+        verify(conversionService, times(2)).convert(source, SourceDto.class);
+        verifyNoMoreInteractions(sourceRepository, source, conversionService);
+
+        assertEquals("2 sourceDtos are returned", 2, result.size());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testFindWithoutPeriod() {
+        String query = "query";
+        List<Classification> classifications = Arrays.asList(Classification.ARMOR);
+        List<Type> types = Arrays.asList(Type.WRITTEN);
+        FindSourceDto findSourceDto = new FindSourceDto();
+        findSourceDto.setQuery(query);
+        findSourceDto.setClassifications(classifications);
+        findSourceDto.setTypes(types);
+
+        service.find(findSourceDto);
+    }
+
+    @Test
+    public void testFindWithWhitespaceQuery() {
+        String query = "   ";
+        String correctedQuery = "";
+        Period period = Period.EARLY_MIDDLE_AGES;
+        List<Classification> classifications = Arrays.asList(Classification.ARMOR);
+        List<Type> types = Arrays.asList(Type.WRITTEN);
+        FindSourceDto findSourceDto = new FindSourceDto();
+        findSourceDto.setQuery(query);
+        findSourceDto.setPeriod(period);
+        findSourceDto.setClassifications(classifications);
+        findSourceDto.setTypes(types);
+        List<Source> sources = Arrays.asList(source, source);
+
+        when(sourceRepository.find(period, types, classifications, correctedQuery)).thenReturn(sources);
+
+        List<SourceDto> result = service.find(findSourceDto);
+
+        verify(sourceRepository).find(period, types, classifications, correctedQuery);
+        verify(conversionService, times(2)).convert(source, SourceDto.class);
+        verifyNoMoreInteractions(sourceRepository, source, conversionService);
+
+        assertEquals("2 sourceDtos are returned", 2, result.size());
     }
 }

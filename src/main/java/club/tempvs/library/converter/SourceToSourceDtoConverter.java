@@ -16,6 +16,7 @@ public class SourceToSourceDtoConverter implements Converter<Source, SourceDto> 
 
     private final MessageSource messageSource;
 
+    @Override
     public SourceDto convert(Source source) {
         Locale locale = LocaleContextHolder.getLocale();
         String classificationKey = source.getClassification().getKey();
@@ -26,6 +27,7 @@ public class SourceToSourceDtoConverter implements Converter<Source, SourceDto> 
         String period = messageSource.getMessage(periodKey, null, periodKey, locale);
 
         SourceDto sourceDto = new SourceDto();
+        sourceDto.setId(source.getId());
         sourceDto.setName(source.getName());
         sourceDto.setDescription(source.getDescription());
         sourceDto.setClassification(classification);
