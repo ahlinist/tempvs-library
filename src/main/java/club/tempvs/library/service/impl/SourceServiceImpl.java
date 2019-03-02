@@ -1,7 +1,6 @@
 package club.tempvs.library.service.impl;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static java.util.Objects.isNull;
 import static club.tempvs.library.domain.Source.Period;
 import static club.tempvs.library.domain.Source.Classification;
 import static club.tempvs.library.domain.Source.Type;
@@ -70,15 +69,15 @@ public class SourceServiceImpl implements SourceService {
             validationHelper.addError(errorsDto, NAME_FIELD, NAME_BLANK_ERROR);
         }
 
-        if (isNull(sourceDto.getClassification())) {
+        if (isBlank(sourceDto.getClassification())) {
             validationHelper.addError(errorsDto, CLASSIFICATION_FIELD, CLASSIFICATION_MISSING_ERROR);
         }
 
-        if (isNull(sourceDto.getPeriod())) {
+        if (isBlank(sourceDto.getPeriod())) {
             validationHelper.addError(errorsDto, PERIOD_FIELD, PERIOD_MISSING_ERROR);
         }
 
-        if (isNull(sourceDto.getType())) {
+        if (isBlank(sourceDto.getType())) {
             validationHelper.addError(errorsDto, TYPE_FIELD, TYPE_MISSING_ERROR);
         }
 
