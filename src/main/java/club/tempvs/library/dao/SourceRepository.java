@@ -5,6 +5,7 @@ import static club.tempvs.library.domain.Source.Type;
 import static club.tempvs.library.domain.Source.Classification;
 
 import club.tempvs.library.domain.Source;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -17,5 +18,10 @@ public interface SourceRepository extends JpaRepository<Source, Long> {
             "AND s.type IN :types " +
             "AND s.classification IN :classifications " +
             "AND (s.name LIKE %:query% OR s.description LIKE %:query%)")
-    List<Source> find(Period period, List<Type> types, List<Classification> classifications, String query);
+    List<Source> find(
+            Period period,
+            List<Type> types,
+            List<Classification> classifications,
+            String query,
+            Pageable pageable);
 }

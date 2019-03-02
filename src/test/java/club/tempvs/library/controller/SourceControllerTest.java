@@ -60,13 +60,15 @@ public class SourceControllerTest {
 
     @Test
     public void testFind() {
+        int page = 0;
+        int size = 40;
         List<SourceDto> sourceDtos = Arrays.asList(sourceDto, sourceDto);
 
-        when(sourceService.find(findSourceDto)).thenReturn(sourceDtos);
+        when(sourceService.find(findSourceDto, page, size)).thenReturn(sourceDtos);
 
-        List<SourceDto> result = controller.find(findSourceDto);
+        List<SourceDto> result = controller.find(findSourceDto, page, size);
 
-        verify(sourceService).find(findSourceDto);
+        verify(sourceService).find(findSourceDto, page, size);
         verifyNoMoreInteractions(sourceService);
 
         assertEquals("A list of sourceDtos is returned", sourceDtos, result);

@@ -23,6 +23,9 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -99,7 +102,7 @@ public class SourceServiceImpl implements SourceService {
     @HystrixCommand(commandProperties = {
             @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
     })
-    public List<SourceDto> find(FindSourceDto findSourceDto) {
+    public List<SourceDto> find(FindSourceDto findSourceDto, int page, int size) {
         String query = findSourceDto.getQuery();
 
         if (isBlank(query)) {
@@ -124,7 +127,8 @@ public class SourceServiceImpl implements SourceService {
             types = Arrays.asList(Type.values());
         }
 
-        List<Source> sources = sourceRepository.find(period, types, classifications, query);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
+        List<Source> sources = sourceRepository.find(period, types, classifications, query, pageable);
 
         return sources.stream()
                 .map(source -> conversionService.convert(source, SourceDto.class))

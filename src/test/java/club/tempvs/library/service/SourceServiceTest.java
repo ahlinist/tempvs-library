@@ -21,6 +21,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.Arrays;
 import java.util.List;
@@ -133,6 +136,8 @@ public class SourceServiceTest {
 
     @Test
     public void testFind() {
+        int page = 0;
+        int size = 40;
         String query = "query";
         Period period = Period.EARLY_MIDDLE_AGES;
         List<Classification> classifications = Arrays.asList(Classification.ARMOR);
@@ -143,12 +148,13 @@ public class SourceServiceTest {
         findSourceDto.setClassifications(classifications);
         findSourceDto.setTypes(types);
         List<Source> sources = Arrays.asList(source, source);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
 
-        when(sourceRepository.find(period, types, classifications, query)).thenReturn(sources);
+        when(sourceRepository.find(period, types, classifications, query, pageable)).thenReturn(sources);
 
-        List<SourceDto> result = service.find(findSourceDto);
+        List<SourceDto> result = service.find(findSourceDto, page, size);
 
-        verify(sourceRepository).find(period, types, classifications, query);
+        verify(sourceRepository).find(period, types, classifications, query, pageable);
         verify(conversionService, times(2)).convert(source, SourceDto.class);
         verifyNoMoreInteractions(sourceRepository, source, conversionService);
 
@@ -157,6 +163,8 @@ public class SourceServiceTest {
 
     @Test
     public void testFindWithoutClassifications() {
+        int page = 0;
+        int size = 40;
         String query = "query";
         Period period = Period.EARLY_MIDDLE_AGES;
         List<Classification> classifications = Arrays.asList(Classification.values());
@@ -166,12 +174,13 @@ public class SourceServiceTest {
         findSourceDto.setPeriod(period);
         findSourceDto.setTypes(types);
         List<Source> sources = Arrays.asList(source, source);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
 
-        when(sourceRepository.find(period, types, classifications, query)).thenReturn(sources);
+        when(sourceRepository.find(period, types, classifications, query, pageable)).thenReturn(sources);
 
-        List<SourceDto> result = service.find(findSourceDto);
+        List<SourceDto> result = service.find(findSourceDto, page, size);
 
-        verify(sourceRepository).find(period, types, classifications, query);
+        verify(sourceRepository).find(period, types, classifications, query, pageable);
         verify(conversionService, times(2)).convert(source, SourceDto.class);
         verifyNoMoreInteractions(sourceRepository, source, conversionService);
 
@@ -180,6 +189,8 @@ public class SourceServiceTest {
 
     @Test
     public void testFindWithoutTypes() {
+        int page = 0;
+        int size = 40;
         String query = "query";
         Period period = Period.EARLY_MIDDLE_AGES;
         List<Classification> classifications = Arrays.asList(Classification.FOOTWEAR);
@@ -189,12 +200,13 @@ public class SourceServiceTest {
         findSourceDto.setPeriod(period);
         findSourceDto.setClassifications(classifications);
         List<Source> sources = Arrays.asList(source, source);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
 
-        when(sourceRepository.find(period, types, classifications, query)).thenReturn(sources);
+        when(sourceRepository.find(period, types, classifications, query, pageable)).thenReturn(sources);
 
-        List<SourceDto> result = service.find(findSourceDto);
+        List<SourceDto> result = service.find(findSourceDto, page, size);
 
-        verify(sourceRepository).find(period, types, classifications, query);
+        verify(sourceRepository).find(period, types, classifications, query, pageable);
         verify(conversionService, times(2)).convert(source, SourceDto.class);
         verifyNoMoreInteractions(sourceRepository, source, conversionService);
 
@@ -203,6 +215,8 @@ public class SourceServiceTest {
 
     @Test(expected = IllegalStateException.class)
     public void testFindWithoutPeriod() {
+        int page = 0;
+        int size = 40;
         String query = "query";
         List<Classification> classifications = Arrays.asList(Classification.ARMOR);
         List<Type> types = Arrays.asList(Type.WRITTEN);
@@ -211,11 +225,13 @@ public class SourceServiceTest {
         findSourceDto.setClassifications(classifications);
         findSourceDto.setTypes(types);
 
-        service.find(findSourceDto);
+        service.find(findSourceDto, page, size);
     }
 
     @Test
     public void testFindWithWhitespaceQuery() {
+        int page = 0;
+        int size = 40;
         String query = "   ";
         String correctedQuery = "";
         Period period = Period.EARLY_MIDDLE_AGES;
@@ -227,12 +243,13 @@ public class SourceServiceTest {
         findSourceDto.setClassifications(classifications);
         findSourceDto.setTypes(types);
         List<Source> sources = Arrays.asList(source, source);
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
 
-        when(sourceRepository.find(period, types, classifications, correctedQuery)).thenReturn(sources);
+        when(sourceRepository.find(period, types, classifications, correctedQuery, pageable)).thenReturn(sources);
 
-        List<SourceDto> result = service.find(findSourceDto);
+        List<SourceDto> result = service.find(findSourceDto, page, size);
 
-        verify(sourceRepository).find(period, types, classifications, correctedQuery);
+        verify(sourceRepository).find(period, types, classifications, correctedQuery, pageable);
         verify(conversionService, times(2)).convert(source, SourceDto.class);
         verifyNoMoreInteractions(sourceRepository, source, conversionService);
 
