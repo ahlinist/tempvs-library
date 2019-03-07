@@ -64,9 +64,9 @@ public class SourceControllerIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("name", is("src name")))
                     .andExpect(jsonPath("description", is("src description")))
-                    .andExpect(jsonPath("classification", is("Armor")))
-                    .andExpect(jsonPath("type", is("Written")))
-                    .andExpect(jsonPath("period", is("Ancient")));
+                    .andExpect(jsonPath("classification", is("ARMOR")))
+                    .andExpect(jsonPath("type", is("WRITTEN")))
+                    .andExpect(jsonPath("period", is("ANCIENT")));
     }
 
     @Test
@@ -109,9 +109,9 @@ public class SourceControllerIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("name", is(name)))
                     .andExpect(jsonPath("description", is(description)))
-                    .andExpect(jsonPath("classification", is("Armor")))
-                    .andExpect(jsonPath("type", is("Graphic")))
-                    .andExpect(jsonPath("period", is("Contemporary")));
+                    .andExpect(jsonPath("classification", is("ARMOR")))
+                    .andExpect(jsonPath("type", is("GRAPHIC")))
+                    .andExpect(jsonPath("period", is("CONTEMPORARY")));
     }
 
     @Test
@@ -138,19 +138,19 @@ public class SourceControllerIntegrationTest {
                     .andExpect(jsonPath("$", hasSize(3)))
                     .andExpect(jsonPath("$[0].name", is("name11")))
                     .andExpect(jsonPath("$[0].description", is("1desc")))
-                    .andExpect(jsonPath("$[0].classification", is("Armor")))
-                    .andExpect(jsonPath("$[0].type", is("Graphic")))
-                    .andExpect(jsonPath("$[0].period", is("Early Middle Ages")))
+                    .andExpect(jsonPath("$[0].classification", is("ARMOR")))
+                    .andExpect(jsonPath("$[0].type", is("GRAPHIC")))
+                    .andExpect(jsonPath("$[0].period", is("EARLY_MIDDLE_AGES")))
                     .andExpect(jsonPath("$[1].name", is("name13")))
                     .andExpect(jsonPath("$[1].description", is("3desc")))
-                    .andExpect(jsonPath("$[1].classification", is("Footwear")))
-                    .andExpect(jsonPath("$[1].type", is("Graphic")))
-                    .andExpect(jsonPath("$[1].period", is("Early Middle Ages")))
+                    .andExpect(jsonPath("$[1].classification", is("FOOTWEAR")))
+                    .andExpect(jsonPath("$[1].type", is("GRAPHIC")))
+                    .andExpect(jsonPath("$[1].period", is("EARLY_MIDDLE_AGES")))
                     .andExpect(jsonPath("$[2].name", is("name15")))
                     .andExpect(jsonPath("$[2].description", is("5desc")))
-                    .andExpect(jsonPath("$[2].classification", is("Household")))
-                    .andExpect(jsonPath("$[2].type", is("Written")))
-                    .andExpect(jsonPath("$[2].period", is("Early Middle Ages")));
+                    .andExpect(jsonPath("$[2].classification", is("HOUSEHOLD")))
+                    .andExpect(jsonPath("$[2].type", is("WRITTEN")))
+                    .andExpect(jsonPath("$[2].period", is("EARLY_MIDDLE_AGES")));
     }
 
     private String buildUserInfoValue(Long id, Role role) throws Exception {

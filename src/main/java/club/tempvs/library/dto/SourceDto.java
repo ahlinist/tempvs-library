@@ -13,17 +13,17 @@ public class SourceDto {
     private Long id;
     private String name;
     private String description;
-    private String classification;
-    private String type;
-    private String period;
+    private Classification classification;
+    private Type type;
+    private Period period;
 
     public Source toSource() {
         Source source = new Source();
         source.setName(this.name);
         source.setDescription(this.description);
-        source.setClassification(Classification.valueOf(this.classification));
-        source.setType(Type.valueOf(this.type));
-        source.setPeriod(Period.valueOf(this.period));
+        source.setClassification(this.classification);
+        source.setType(this.type);
+        source.setPeriod(this.period);
         return source;
     }
 }

@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -49,12 +48,10 @@ public class SourceServiceTest {
     private ValidationHelper validationHelper;
     @Mock
     private UserHolder userHolder;
-    @Mock
-    private ConversionService conversionService;
 
     @Before
     public void setUp() {
-        service = new SourceServiceImpl(sourceRepository, validationHelper, userHolder, conversionService);
+        service = new SourceServiceImpl(sourceRepository, validationHelper, userHolder);
     }
 
     @Test
@@ -63,16 +60,15 @@ public class SourceServiceTest {
         String sourceName = "lorica segmentata";
         SourceDto sourceDto = new SourceDto();
         sourceDto.setName(sourceName);
-        sourceDto.setClassification(Classification.ARMOR.toString());
-        sourceDto.setType(Type.ARCHAEOLOGICAL.toString());
-        sourceDto.setPeriod(Period.ANTIQUITY.toString());
+        sourceDto.setClassification(Classification.ARMOR);
+        sourceDto.setType(Type.ARCHAEOLOGICAL);
+        sourceDto.setPeriod(Period.ANTIQUITY);
         Source source = sourceDto.toSource();
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
         when(validationHelper.getErrors()).thenReturn(errorsDto);
         when(sourceRepository.save(source)).thenReturn(source);
-        when(conversionService.convert(source, SourceDto.class)).thenReturn(sourceDto);
 
         SourceDto result = service.create(sourceDto);
 
@@ -81,8 +77,7 @@ public class SourceServiceTest {
         verify(validationHelper).getErrors();
         verify(validationHelper).processErrors(errorsDto);
         verify(sourceRepository).save(source);
-        verify(conversionService).convert(source, SourceDto.class);
-        verifyNoMoreInteractions(user, sourceRepository, validationHelper, conversionService);
+        verifyNoMoreInteractions(user, sourceRepository, validationHelper);
 
         assertEquals("Source is returned", sourceDto, result);
     }
@@ -115,11 +110,12 @@ public class SourceServiceTest {
         Long id = 1L;
 
         when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
-        when(conversionService.convert(source, SourceDto.class)).thenReturn(sourceDto);
+        when(source.toSourceDto()).thenReturn(sourceDto);
 
         SourceDto result = service.get(id);
 
         verify(sourceRepository).findById(id);
+        verify(source).toSourceDto();
         verifyNoMoreInteractions(sourceRepository, source);
 
         assertEquals("Source object is returned", sourceDto, result);
@@ -155,8 +151,8 @@ public class SourceServiceTest {
         List<SourceDto> result = service.find(findSourceDto, page, size);
 
         verify(sourceRepository).find(period, types, classifications, query, pageable);
-        verify(conversionService, times(2)).convert(source, SourceDto.class);
-        verifyNoMoreInteractions(sourceRepository, source, conversionService);
+        verify(source, times(2)).toSourceDto();
+        verifyNoMoreInteractions(sourceRepository, source);
 
         assertEquals("2 sourceDtos are returned", 2, result.size());
     }
@@ -181,8 +177,8 @@ public class SourceServiceTest {
         List<SourceDto> result = service.find(findSourceDto, page, size);
 
         verify(sourceRepository).find(period, types, classifications, query, pageable);
-        verify(conversionService, times(2)).convert(source, SourceDto.class);
-        verifyNoMoreInteractions(sourceRepository, source, conversionService);
+        verify(source, times(2)).toSourceDto();
+        verifyNoMoreInteractions(sourceRepository, source);
 
         assertEquals("2 sourceDtos are returned", 2, result.size());
     }
@@ -207,8 +203,8 @@ public class SourceServiceTest {
         List<SourceDto> result = service.find(findSourceDto, page, size);
 
         verify(sourceRepository).find(period, types, classifications, query, pageable);
-        verify(conversionService, times(2)).convert(source, SourceDto.class);
-        verifyNoMoreInteractions(sourceRepository, source, conversionService);
+        verify(source, times(2)).toSourceDto();
+        verifyNoMoreInteractions(sourceRepository, source);
 
         assertEquals("2 sourceDtos are returned", 2, result.size());
     }
@@ -250,8 +246,8 @@ public class SourceServiceTest {
         List<SourceDto> result = service.find(findSourceDto, page, size);
 
         verify(sourceRepository).find(period, types, classifications, correctedQuery, pageable);
-        verify(conversionService, times(2)).convert(source, SourceDto.class);
-        verifyNoMoreInteractions(sourceRepository, source, conversionService);
+        verify(source, times(2)).toSourceDto();
+        verifyNoMoreInteractions(sourceRepository, source);
 
         assertEquals("2 sourceDtos are returned", 2, result.size());
     }

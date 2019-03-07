@@ -1,5 +1,6 @@
 package club.tempvs.library.service.impl;
 
+import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static club.tempvs.library.domain.Source.Period;
 import static club.tempvs.library.domain.Source.Classification;
@@ -21,7 +22,6 @@ import club.tempvs.library.util.ValidationHelper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,7 +47,6 @@ public class SourceServiceImpl implements SourceService {
     private final SourceRepository sourceRepository;
     private final ValidationHelper validationHelper;
     private final UserHolder userHolder;
-    private final ConversionService conversionService;
 
     @Override
     @HystrixCommand(commandProperties = {
@@ -69,22 +68,22 @@ public class SourceServiceImpl implements SourceService {
             validationHelper.addError(errorsDto, NAME_FIELD, NAME_BLANK_ERROR);
         }
 
-        if (isBlank(sourceDto.getClassification())) {
+        if (isNull(sourceDto.getClassification())) {
             validationHelper.addError(errorsDto, CLASSIFICATION_FIELD, CLASSIFICATION_MISSING_ERROR);
         }
 
-        if (isBlank(sourceDto.getPeriod())) {
+        if (isNull(sourceDto.getPeriod())) {
             validationHelper.addError(errorsDto, PERIOD_FIELD, PERIOD_MISSING_ERROR);
         }
 
-        if (isBlank(sourceDto.getType())) {
+        if (isNull(sourceDto.getType())) {
             validationHelper.addError(errorsDto, TYPE_FIELD, TYPE_MISSING_ERROR);
         }
 
         validationHelper.processErrors(errorsDto);
         Source source = sourceDto.toSource();
         Source persistentSource = sourceRepository.save(source);
-        return conversionService.convert(persistentSource, SourceDto.class);
+        return persistentSource.toSourceDto();
     }
 
     @Override
@@ -93,7 +92,7 @@ public class SourceServiceImpl implements SourceService {
     })
     public SourceDto get(Long id) {
         return sourceRepository.findById(id)
-                .map(source -> conversionService.convert(source, SourceDto.class))
+                .map(Source::toSourceDto)
                 .get();
     }
 
@@ -130,7 +129,7 @@ public class SourceServiceImpl implements SourceService {
         List<Source> sources = sourceRepository.find(period, types, classifications, query, pageable);
 
         return sources.stream()
-                .map(source -> conversionService.convert(source, SourceDto.class))
+                .map(Source::toSourceDto)
                 .collect(toList());
     }
 }

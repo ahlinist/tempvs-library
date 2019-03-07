@@ -1,5 +1,6 @@
 package club.tempvs.library.domain;
 
+import club.tempvs.library.dto.SourceDto;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -36,48 +37,47 @@ public class Source {
     @CreatedDate
     private Instant createdDate;
 
-    @AllArgsConstructor
     public enum Classification {
 
-        CLOTHING("classification.clothing"),
-        FOOTWEAR("classification.footwear"),
-        HOUSEHOLD("classification.household"),
-        WEAPON("classification.weapon"),
-        ARMOR("classification.armor"),
-        OTHER("classification.other");
-
-        @Getter
-        String key;
+        CLOTHING,
+        FOOTWEAR,
+        HOUSEHOLD,
+        WEAPON,
+        ARMOR,
+        OTHER
     }
 
-    @AllArgsConstructor
     public enum Type {
 
-        WRITTEN("type.written"),
-        GRAPHIC("type.graphic"),
-        ARCHAEOLOGICAL("type.archaeological"),
-        OTHER("type.other");
-
-        @Getter
-        String key;
+        WRITTEN,
+        GRAPHIC,
+        ARCHAEOLOGICAL,
+        OTHER
     }
 
-    @AllArgsConstructor
     public enum Period {
 
-        ANCIENT("period.ancient"),
-        ANTIQUITY("period.antiquity"),
-        EARLY_MIDDLE_AGES("period.early-middle-ages"),
-        HIGH_MIDDLE_AGES("period.high-middle-ages"),
-        LATE_MIDDLE_AGES("period.late-middle-ages"),
-        RENAISSANCE("period.renaissance"),
-        MODERN("period.modern"),
-        WWI("period.wwi"),
-        WWII("period.wwii"),
-        CONTEMPORARY("period.contemporary"),
-        OTHER("period.other");
+        ANCIENT,
+        ANTIQUITY,
+        EARLY_MIDDLE_AGES,
+        HIGH_MIDDLE_AGES,
+        LATE_MIDDLE_AGES,
+        RENAISSANCE,
+        MODERN,
+        WWI,
+        WWII,
+        CONTEMPORARY,
+        OTHER
+    }
 
-        @Getter
-        String key;
+    public SourceDto toSourceDto() {
+        SourceDto sourceDto = new SourceDto();
+        sourceDto.setId(this.id);
+        sourceDto.setName(this.name);
+        sourceDto.setDescription(this.description);
+        sourceDto.setClassification(this.classification);
+        sourceDto.setType(this.type);
+        sourceDto.setPeriod(this.period);
+        return sourceDto;
     }
 }
