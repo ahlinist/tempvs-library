@@ -24,6 +24,7 @@ public class UserInfoInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String userInfoHeaderValue = request.getHeader(USER_INFO_HEADER);
+        response.setHeader(USER_INFO_HEADER, userInfoHeaderValue);
 
         try {
             UserInfoDto userInfoDto = objectMapper.readValue(userInfoHeaderValue, UserInfoDto.class);
