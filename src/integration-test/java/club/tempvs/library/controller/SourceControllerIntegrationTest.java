@@ -153,6 +153,24 @@ public class SourceControllerIntegrationTest {
                     .andExpect(jsonPath("$[2].period", is("EARLY_MIDDLE_AGES")));
     }
 
+    @Test
+    public void testUpdateName() throws Exception {
+        File updateSourceNameFile = ResourceUtils.getFile("classpath:source/update-name.json");
+        String updateSourceNameJson = new String(Files.readAllBytes(updateSourceNameFile.toPath()));
+
+        Long userId = 1L;
+        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_SCRIBE);
+        Source source = createSource("old name", "desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES);
+
+        mvc.perform(patch("/api/source/" + source.getId() + "/name")
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .content(updateSourceNameJson)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                    .andExpect(status().isOk());
+    }
+
     private String buildUserInfoValue(Long id, Role role) throws Exception {
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setUserId(id);

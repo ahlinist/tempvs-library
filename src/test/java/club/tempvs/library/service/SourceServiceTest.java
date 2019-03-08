@@ -251,4 +251,72 @@ public class SourceServiceTest {
 
         assertEquals("2 sourceDtos are returned", 2, result.size());
     }
+
+    @Test(expected = ForbiddenException.class)
+    public void testUpdateNameForInsufficientAuthorities() {
+        Long id = 1L;
+        String name = "new name";
+        List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+
+        service.updateName(id, name);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUpdateNameForInvalidInput() {
+        Long id = 1L;
+        String name = "";
+        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+        when(validationHelper.getErrors()).thenReturn(errorsDto);
+        doThrow(new IllegalArgumentException()).when(validationHelper).processErrors(errorsDto);
+
+        service.updateName(id, name);
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testUpdateNameForNotExistingSource() {
+        Long id = 1L;
+        String name = "new name";
+        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+        when(validationHelper.getErrors()).thenReturn(errorsDto);
+        when(sourceRepository.findById(id)).thenReturn(Optional.empty());
+
+        service.updateName(id, name);
+    }
+
+    @Test
+    public void testUpdateName() {
+        Long id = 1L;
+        String name = "new name";
+        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+        when(validationHelper.getErrors()).thenReturn(errorsDto);
+        when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
+        when(sourceRepository.save(source)).thenReturn(source);
+        when(source.toSourceDto()).thenReturn(sourceDto);
+
+        SourceDto result = service.updateName(id, name);
+
+        verify(userHolder).getUser();
+        verify(user).getRoles();
+        verify(validationHelper).getErrors();
+        verify(validationHelper).processErrors(errorsDto);
+        verify(sourceRepository).findById(id);
+        verify(source).setName(name);
+        verify(sourceRepository).save(source);
+        verify(source).toSourceDto();
+        verifyNoMoreInteractions(sourceRepository, source, sourceDto, userHolder, user, validationHelper);
+
+        assertEquals("SourceDto object is returned", sourceDto, result);
+    }
 }

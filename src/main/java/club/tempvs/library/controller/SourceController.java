@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Max;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/source")
@@ -37,5 +38,11 @@ public class SourceController {
             @Max(DEFAULT_SIZE_VALUE) @RequestParam int size) {
 
         return sourceService.find(q, page, size);
+    }
+
+    @PatchMapping("/{id}/name")
+    public void updateName(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+
+        sourceService.updateName(id, payload.get("name"));
     }
 }

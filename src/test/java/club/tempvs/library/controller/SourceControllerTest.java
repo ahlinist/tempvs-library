@@ -13,7 +13,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SourceControllerTest {
@@ -72,5 +74,20 @@ public class SourceControllerTest {
         verifyNoMoreInteractions(sourceService);
 
         assertEquals("A list of sourceDtos is returned", sourceDtos, result);
+    }
+
+    @Test
+    public void testUpdateName() {
+        Long id = 1L;
+        String name = "new name";
+        Map<String, String> payload = new HashMap<>();
+        payload.put("name", name);
+
+        when(sourceService.updateName(id, name)).thenReturn(sourceDto);
+
+        controller.updateName(id, payload);
+
+        verify(sourceService).updateName(id, name);
+        verifyNoMoreInteractions(sourceService, sourceDto);
     }
 }

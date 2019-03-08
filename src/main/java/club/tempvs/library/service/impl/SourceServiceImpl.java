@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,10 +49,6 @@ public class SourceServiceImpl implements SourceService {
     private final ValidationHelper validationHelper;
     private final UserHolder userHolder;
 
-    @Override
-    @HystrixCommand(commandProperties = {
-            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
-    })
     public SourceDto create(SourceDto sourceDto) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
@@ -82,16 +79,11 @@ public class SourceServiceImpl implements SourceService {
 
         validationHelper.processErrors(errorsDto);
         Source source = sourceDto.toSource();
-        Source persistentSource = sourceRepository.save(source);
-        return persistentSource.toSourceDto();
+        return saveSource(source).toSourceDto();
     }
 
-    @Override
-    @HystrixCommand(commandProperties = {
-            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
-    })
     public SourceDto get(Long id) {
-        return sourceRepository.findById(id)
+        return getSource(id)
                 .map(Source::toSourceDto)
                 .get();
     }
@@ -126,10 +118,52 @@ public class SourceServiceImpl implements SourceService {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
-        List<Source> sources = sourceRepository.find(period, types, classifications, query, pageable);
 
-        return sources.stream()
+        return findSources(period, types, classifications, query, pageable).stream()
                 .map(Source::toSourceDto)
                 .collect(toList());
+    }
+
+    public SourceDto updateName(Long id, String name) {
+        User user = userHolder.getUser();
+        List<Role> userRoles = user.getRoles();
+        List<Role> allowedRoles = Arrays.asList(Role.ROLE_ADMIN, Role.ROLE_ARCHIVARIUS, Role.ROLE_SCRIBE);
+
+        if (Collections.disjoint(userRoles, allowedRoles)) {
+            throw new ForbiddenException("User lacks the necessary authorities to create a source");
+        }
+
+        ErrorsDto errorsDto = validationHelper.getErrors();
+
+        if (isBlank(name)) {
+            validationHelper.addError(errorsDto, NAME_FIELD, NAME_BLANK_ERROR);
+        }
+
+        validationHelper.processErrors(errorsDto);
+        Source source = getSource(id).get();
+        source.setName(name);
+        return saveSource(source).toSourceDto();
+    }
+
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
+    })
+    private Source saveSource(Source source) {
+        return sourceRepository.save(source);
+    }
+
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
+    })
+    private Optional<Source> getSource(Long id) {
+        return sourceRepository.findById(id);
+    }
+
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
+    })
+    private List<Source> findSources(Period period, List<Type> types,
+                                     List<Classification> classifications, String query, Pageable pageable) {
+        return sourceRepository.find(period, types, classifications, query, pageable);
     }
 }
