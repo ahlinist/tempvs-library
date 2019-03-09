@@ -145,6 +145,20 @@ public class SourceServiceImpl implements SourceService {
         return saveSource(source).toSourceDto();
     }
 
+    public SourceDto updateDescription(Long id, String description) {
+        User user = userHolder.getUser();
+        List<Role> userRoles = user.getRoles();
+        List<Role> allowedRoles = Arrays.asList(Role.ROLE_ADMIN, Role.ROLE_ARCHIVARIUS, Role.ROLE_SCRIBE);
+
+        if (Collections.disjoint(userRoles, allowedRoles)) {
+            throw new ForbiddenException("User lacks the necessary authorities to create a source");
+        }
+
+        Source source = getSource(id).get();
+        source.setDescription(description);
+        return saveSource(source).toSourceDto();
+    }
+
     @HystrixCommand(commandProperties = {
             @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
     })

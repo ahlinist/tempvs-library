@@ -14,4 +14,6 @@ public interface SourceService {
     List<SourceDto> find(FindSourceDto findSourceDto, int page, int size);
 
     SourceDto updateName(Long id, String name);
+
+    SourceDto updateDescription(Long id, String description);
 }

@@ -171,6 +171,24 @@ public class SourceControllerIntegrationTest {
                     .andExpect(status().isOk());
     }
 
+    @Test
+    public void testUpdateDescription() throws Exception {
+        File updateSourceDescFile = ResourceUtils.getFile("classpath:source/update-description.json");
+        String updateSourceDescJson = new String(Files.readAllBytes(updateSourceDescFile.toPath()));
+
+        Long userId = 1L;
+        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_SCRIBE);
+        Source source = createSource("name", "old desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES);
+
+        mvc.perform(patch("/api/source/" + source.getId() + "/description")
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .content(updateSourceDescJson)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                    .andExpect(status().isOk());
+    }
+
     private String buildUserInfoValue(Long id, Role role) throws Exception {
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setUserId(id);

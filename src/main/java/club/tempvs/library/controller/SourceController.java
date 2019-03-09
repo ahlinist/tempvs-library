@@ -17,7 +17,7 @@ import java.util.Map;
 @Validated
 public class SourceController {
 
-    private static final int DEFAULT_SIZE_VALUE = 40;
+    private static final int MAX_SIZE_VALUE = 40;
 
     private final SourceService sourceService;
 
@@ -35,7 +35,7 @@ public class SourceController {
     public List<SourceDto> find(
             @RequestParam FindSourceDto q,
             @RequestParam int page,
-            @Max(DEFAULT_SIZE_VALUE) @RequestParam int size) {
+            @Max(MAX_SIZE_VALUE) @RequestParam int size) {
 
         return sourceService.find(q, page, size);
     }
@@ -44,5 +44,11 @@ public class SourceController {
     public void updateName(@PathVariable Long id, @RequestBody Map<String, String> payload) {
 
         sourceService.updateName(id, payload.get("name"));
+    }
+
+    @PatchMapping("/{id}/description")
+    public void updateDescription(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+
+        sourceService.updateDescription(id, payload.get("description"));
     }
 }

@@ -319,4 +319,54 @@ public class SourceServiceTest {
 
         assertEquals("SourceDto object is returned", sourceDto, result);
     }
+
+    @Test(expected = ForbiddenException.class)
+    public void testUpdateDescriptionForInsufficientAuthorities() {
+        Long id = 1L;
+        String description = "new desc";
+        List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+
+        service.updateDescription(id, description);
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testUpdateDescriptionForNotExistingSource() {
+        Long id = 1L;
+        String description = "new desc";
+        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+        when(sourceRepository.findById(id)).thenReturn(Optional.empty());
+
+        service.updateDescription(id, description);
+    }
+
+    @Test
+    public void testUpdateDescription() {
+        Long id = 1L;
+        String description = "new desc";
+        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+        when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
+        when(sourceRepository.save(source)).thenReturn(source);
+        when(source.toSourceDto()).thenReturn(sourceDto);
+
+        SourceDto result = service.updateDescription(id, description);
+
+        verify(userHolder).getUser();
+        verify(user).getRoles();
+        verify(sourceRepository).findById(id);
+        verify(source).setDescription(description);
+        verify(sourceRepository).save(source);
+        verify(source).toSourceDto();
+        verifyNoMoreInteractions(sourceRepository, source, sourceDto, userHolder, user, validationHelper);
+
+        assertEquals("SourceDto object is returned", sourceDto, result);
+    }
 }

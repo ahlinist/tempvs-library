@@ -90,4 +90,19 @@ public class SourceControllerTest {
         verify(sourceService).updateName(id, name);
         verifyNoMoreInteractions(sourceService, sourceDto);
     }
+
+    @Test
+    public void testUpdateDescription() {
+        Long id = 1L;
+        String description = "new desc";
+        Map<String, String> payload = new HashMap<>();
+        payload.put("description", description);
+
+        when(sourceService.updateDescription(id, description)).thenReturn(sourceDto);
+
+        controller.updateDescription(id, payload);
+
+        verify(sourceService).updateDescription(id, description);
+        verifyNoMoreInteractions(sourceService, sourceDto);
+    }
 }
