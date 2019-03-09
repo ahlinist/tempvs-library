@@ -49,6 +49,7 @@ public class SourceServiceImpl implements SourceService {
     private final ValidationHelper validationHelper;
     private final UserHolder userHolder;
 
+    @Override
     public SourceDto create(SourceDto sourceDto) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
@@ -89,9 +90,6 @@ public class SourceServiceImpl implements SourceService {
     }
 
     @Override
-    @HystrixCommand(commandProperties = {
-            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
-    })
     public List<SourceDto> find(FindSourceDto findSourceDto, int page, int size) {
         String query = findSourceDto.getQuery();
 
@@ -124,6 +122,7 @@ public class SourceServiceImpl implements SourceService {
                 .collect(toList());
     }
 
+    @Override
     public SourceDto updateName(Long id, String name) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
@@ -145,6 +144,7 @@ public class SourceServiceImpl implements SourceService {
         return saveSource(source).toSourceDto();
     }
 
+    @Override
     public SourceDto updateDescription(Long id, String description) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
@@ -157,6 +157,19 @@ public class SourceServiceImpl implements SourceService {
         Source source = getSource(id).get();
         source.setDescription(description);
         return saveSource(source).toSourceDto();
+    }
+
+    @Override
+    public void delete(Long id) {
+        User user = userHolder.getUser();
+        List<Role> userRoles = user.getRoles();
+        List<Role> allowedRoles = Arrays.asList(Role.ROLE_ADMIN, Role.ROLE_ARCHIVARIUS);
+
+        if (Collections.disjoint(userRoles, allowedRoles)) {
+            throw new ForbiddenException("User lacks the necessary authorities to create a source");
+        }
+
+        deleteSource(id);
     }
 
     @HystrixCommand(commandProperties = {
@@ -179,5 +192,12 @@ public class SourceServiceImpl implements SourceService {
     private List<Source> findSources(Period period, List<Type> types,
                                      List<Classification> classifications, String query, Pageable pageable) {
         return sourceRepository.find(period, types, classifications, query, pageable);
+    }
+
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
+    })
+    private void deleteSource(Long id) {
+        sourceRepository.deleteById(id);
     }
 }

@@ -51,4 +51,10 @@ public class SourceController {
 
         sourceService.updateDescription(id, payload.get("description"));
     }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+
+        sourceService.delete(id);
+    }
 }

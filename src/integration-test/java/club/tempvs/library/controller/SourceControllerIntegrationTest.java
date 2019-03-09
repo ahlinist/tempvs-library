@@ -52,8 +52,7 @@ public class SourceControllerIntegrationTest {
     public void testCreateSource() throws Exception {
         File createSourceFile = ResourceUtils.getFile("classpath:source/create.json");
         String createSourceJson = new String(Files.readAllBytes(createSourceFile.toPath()));
-        Long userId = 1L;
-        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_CONTRIBUTOR);
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_CONTRIBUTOR);
 
         mvc.perform(post("/api/source")
                 .accept(APPLICATION_JSON_VALUE)
@@ -73,8 +72,7 @@ public class SourceControllerIntegrationTest {
     public void testCreateSourceForInvalidInput() throws Exception {
         File createSourceFile = ResourceUtils.getFile("classpath:source/create-invalid.json");
         String createSourceJson = new String(Files.readAllBytes(createSourceFile.toPath()));
-        Long userId = 1L;
-        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_CONTRIBUTOR);
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_CONTRIBUTOR);
 
         mvc.perform(post("/api/source")
                 .accept(APPLICATION_JSON_VALUE)
@@ -91,8 +89,7 @@ public class SourceControllerIntegrationTest {
 
     @Test
     public void testGetSource() throws Exception {
-        Long userId = 1L;
-        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_CONTRIBUTOR);
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_CONTRIBUTOR);
         String name = "name";
         String description = "desc";
         Classification classification = Classification.ARMOR;
@@ -120,8 +117,7 @@ public class SourceControllerIntegrationTest {
         String findSourceJson = new String(Files.readAllBytes(findSourceFile.toPath()));
         String encodedQuery = Base64.getEncoder().encodeToString(findSourceJson.getBytes());
 
-        Long userId = 1L;
-        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_USER);
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_USER);
         createSource("name41", "desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES);
         createSource("name11", "1desc", Classification.ARMOR, Type.GRAPHIC, Period.EARLY_MIDDLE_AGES);
         createSource("name12", "desc2", Classification.CLOTHING, Type.WRITTEN, Period.CONTEMPORARY);
@@ -158,8 +154,7 @@ public class SourceControllerIntegrationTest {
         File updateSourceNameFile = ResourceUtils.getFile("classpath:source/update-name.json");
         String updateSourceNameJson = new String(Files.readAllBytes(updateSourceNameFile.toPath()));
 
-        Long userId = 1L;
-        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_SCRIBE);
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
         Source source = createSource("old name", "desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES);
 
         mvc.perform(patch("/api/source/" + source.getId() + "/name")
@@ -176,9 +171,8 @@ public class SourceControllerIntegrationTest {
         File updateSourceDescFile = ResourceUtils.getFile("classpath:source/update-description.json");
         String updateSourceDescJson = new String(Files.readAllBytes(updateSourceDescFile.toPath()));
 
-        Long userId = 1L;
-        String userInfoValue = buildUserInfoValue(userId, Role.ROLE_SCRIBE);
-        Source source = createSource("name", "old desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES);
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
+        Source source = createSource("name", "old desc", Classification.WEAPON, Type.GRAPHIC, Period.WWI);
 
         mvc.perform(patch("/api/source/" + source.getId() + "/description")
                 .accept(APPLICATION_JSON_VALUE)
@@ -187,6 +181,32 @@ public class SourceControllerIntegrationTest {
                 .header(USER_INFO_HEADER, userInfoValue)
                 .header(AUTHORIZATION_HEADER, TOKEN))
                     .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testDelete() throws Exception {
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_ARCHIVARIUS);
+        Source source = createSource("name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER);
+
+        mvc.perform(delete("/api/source/" + source.getId())
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testDeleteForInsufficientRights() throws Exception {
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
+        Source source = createSource("name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER);
+
+        mvc.perform(delete("/api/source/" + source.getId())
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                .andExpect(status().isForbidden());
     }
 
     private String buildUserInfoValue(Long id, Role role) throws Exception {

@@ -105,4 +105,14 @@ public class SourceControllerTest {
         verify(sourceService).updateDescription(id, description);
         verifyNoMoreInteractions(sourceService, sourceDto);
     }
+
+    @Test
+    public void testDelete() {
+        Long id = 1L;
+
+        controller.delete(id);
+
+        verify(sourceService).delete(id);
+        verifyNoMoreInteractions(sourceService, sourceDto);
+    }
 }

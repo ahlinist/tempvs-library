@@ -369,4 +369,31 @@ public class SourceServiceTest {
 
         assertEquals("SourceDto object is returned", sourceDto, result);
     }
+
+    @Test(expected = ForbiddenException.class)
+    public void testDeleteSourceForInsufficientAuthorities() {
+        Long id = 1L;
+        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+
+        service.delete(id);
+    }
+
+    @Test
+    public void testDeleteSource() {
+        Long id = 1L;
+        List<Role> roles = Arrays.asList(Role.ROLE_ARCHIVARIUS);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+
+        service.delete(id);
+
+        verify(userHolder).getUser();
+        verify(user).getRoles();
+        verify(sourceRepository).deleteById(id);
+        verifyNoMoreInteractions(sourceRepository, userHolder, user);
+    }
 }

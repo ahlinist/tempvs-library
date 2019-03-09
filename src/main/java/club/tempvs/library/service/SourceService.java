@@ -16,4 +16,6 @@ public interface SourceService {
     SourceDto updateName(Long id, String name);
 
     SourceDto updateDescription(Long id, String description);
+
+    void delete(Long id);
 }
