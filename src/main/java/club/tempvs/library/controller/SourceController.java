@@ -1,6 +1,7 @@
 package club.tempvs.library.controller;
 
 import club.tempvs.library.dto.FindSourceDto;
+import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.service.SourceService;
 import lombok.RequiredArgsConstructor;
@@ -56,5 +57,10 @@ public class SourceController {
     public void delete(@PathVariable Long id) {
 
         sourceService.delete(id);
+    }
+
+    @PostMapping("/{id}/images")
+    public SourceDto addImage(@PathVariable Long id, @RequestBody ImageDto imageDto) {
+        return sourceService.addImage(id, imageDto);
     }
 }

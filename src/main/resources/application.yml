@@ -44,6 +44,11 @@ amqp:
   enabled: true
   url: ${CLOUDAMQP_URL}
   timeout: 30000
+zuul:
+  sensitiveHeaders: Cookie,Set-Cookie
+  ribbon:
+    eager-load:
+      enabled: true
 ---
 spring:
   profiles: local

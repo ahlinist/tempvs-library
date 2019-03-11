@@ -78,6 +78,7 @@ public class Source {
         sourceDto.setClassification(this.classification);
         sourceDto.setType(this.type);
         sourceDto.setPeriod(this.period);
+        sourceDto.setImages(this.images);
         return sourceDto;
     }
 }

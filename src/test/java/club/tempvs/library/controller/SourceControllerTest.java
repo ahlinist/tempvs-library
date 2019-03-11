@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
 import club.tempvs.library.dto.FindSourceDto;
+import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.service.SourceService;
 import org.junit.Before;
@@ -24,6 +25,8 @@ public class SourceControllerTest {
 
     @Mock
     private SourceDto sourceDto;
+    @Mock
+    private ImageDto imageDto;
     @Mock
     private FindSourceDto findSourceDto;
     @Mock
@@ -114,5 +117,19 @@ public class SourceControllerTest {
 
         verify(sourceService).delete(id);
         verifyNoMoreInteractions(sourceService, sourceDto);
+    }
+
+    @Test
+    public void testAddImage() {
+        Long id = 1L;
+
+        when(sourceService.addImage(id, imageDto)).thenReturn(sourceDto);
+
+        SourceDto result = controller.addImage(id, imageDto);
+
+        verify(sourceService).addImage(id, imageDto);
+        verifyNoMoreInteractions(sourceService, imageDto);
+
+        assertEquals("ImageDto is returned back", sourceDto, result);
     }
 }

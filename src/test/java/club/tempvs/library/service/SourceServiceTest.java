@@ -3,9 +3,11 @@ package club.tempvs.library.service;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import static club.tempvs.library.domain.Source.*;
+import static org.springframework.http.HttpMethod.POST;
 
 import club.tempvs.library.dto.ErrorsDto;
 import club.tempvs.library.dto.FindSourceDto;
+import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.dao.SourceRepository;
@@ -14,6 +16,7 @@ import club.tempvs.library.domain.User;
 import club.tempvs.library.holder.UserHolder;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.service.impl.SourceServiceImpl;
+import club.tempvs.library.util.RestCaller;
 import club.tempvs.library.util.ValidationHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,10 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SourceServiceTest {
@@ -43,15 +43,19 @@ public class SourceServiceTest {
     @Mock
     private ErrorsDto errorsDto;
     @Mock
+    private ImageDto imageDto;
+    @Mock
     private SourceRepository sourceRepository;
     @Mock
     private ValidationHelper validationHelper;
     @Mock
     private UserHolder userHolder;
+    @Mock
+    private RestCaller restCaller;
 
     @Before
     public void setUp() {
-        service = new SourceServiceImpl(sourceRepository, validationHelper, userHolder);
+        service = new SourceServiceImpl(sourceRepository, validationHelper, userHolder, restCaller);
     }
 
     @Test
@@ -63,6 +67,7 @@ public class SourceServiceTest {
         sourceDto.setClassification(Classification.ARMOR);
         sourceDto.setType(Type.ARCHAEOLOGICAL);
         sourceDto.setPeriod(Period.ANTIQUITY);
+        sourceDto.setImages(Collections.emptyList());
         Source source = sourceDto.toSource();
 
         when(userHolder.getUser()).thenReturn(user);
@@ -395,5 +400,43 @@ public class SourceServiceTest {
         verify(user).getRoles();
         verify(sourceRepository).deleteById(id);
         verifyNoMoreInteractions(sourceRepository, userHolder, user);
+    }
+
+    @Test
+    public void testAddImage() {
+        Long id = 1L;
+        List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+        when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
+        when(restCaller.call("http://image/api/image", POST, imageDto, ImageDto.class)).thenReturn(imageDto);
+        when(sourceRepository.save(source)).thenReturn(source);
+        when(source.toSourceDto()).thenReturn(sourceDto);
+
+        SourceDto result = service.addImage(id, imageDto);
+
+        verify(userHolder).getUser();
+        verify(user).getRoles();
+        verify(sourceRepository).findById(id);
+        verify(restCaller).call("http://image/api/image", POST, imageDto, ImageDto.class);
+        verify(source).getImages();
+        verify(imageDto).getObjectId();
+        verify(sourceRepository).save(source);
+        verify(source).toSourceDto();
+        verifyNoMoreInteractions(sourceRepository, userHolder, user, imageDto, source, sourceDto);
+
+        assertEquals("ImageDto is returned", sourceDto, result);
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testAddImageForInsufficientRights() {
+        Long id = 1L;
+        List<Role> roles = Arrays.asList();
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+
+        service.addImage(id, imageDto);
     }
 }

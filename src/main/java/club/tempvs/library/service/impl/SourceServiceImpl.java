@@ -6,10 +6,13 @@ import static club.tempvs.library.domain.Source.Period;
 import static club.tempvs.library.domain.Source.Classification;
 import static club.tempvs.library.domain.Source.Type;
 import static java.util.stream.Collectors.toList;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static club.tempvs.library.model.Role.*;
 
 import club.tempvs.library.dto.ErrorsDto;
 import club.tempvs.library.dto.FindSourceDto;
+import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.dao.SourceRepository;
@@ -18,6 +21,7 @@ import club.tempvs.library.domain.User;
 import club.tempvs.library.holder.UserHolder;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.service.SourceService;
+import club.tempvs.library.util.RestCaller;
 import club.tempvs.library.util.ValidationHelper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
@@ -27,10 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -48,16 +49,17 @@ public class SourceServiceImpl implements SourceService {
     private final SourceRepository sourceRepository;
     private final ValidationHelper validationHelper;
     private final UserHolder userHolder;
+    private final RestCaller restCaller;
 
     @Override
     public SourceDto create(SourceDto sourceDto) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
         List<Role> allowedRoles =
-                Arrays.asList(Role.ROLE_ADMIN, Role.ROLE_ARCHIVARIUS, Role.ROLE_SCRIBE, Role.ROLE_CONTRIBUTOR);
+                Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE, ROLE_CONTRIBUTOR);
 
         if (Collections.disjoint(userRoles, allowedRoles)) {
-            throw new ForbiddenException("User lacks the necessary authorities to create a source");
+            throw new ForbiddenException("Access denied");
         }
 
         ErrorsDto errorsDto = validationHelper.getErrors();
@@ -126,10 +128,10 @@ public class SourceServiceImpl implements SourceService {
     public SourceDto updateName(Long id, String name) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
-        List<Role> allowedRoles = Arrays.asList(Role.ROLE_ADMIN, Role.ROLE_ARCHIVARIUS, Role.ROLE_SCRIBE);
+        List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE);
 
         if (Collections.disjoint(userRoles, allowedRoles)) {
-            throw new ForbiddenException("User lacks the necessary authorities to create a source");
+            throw new ForbiddenException("Access denied");
         }
 
         ErrorsDto errorsDto = validationHelper.getErrors();
@@ -148,10 +150,10 @@ public class SourceServiceImpl implements SourceService {
     public SourceDto updateDescription(Long id, String description) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
-        List<Role> allowedRoles = Arrays.asList(Role.ROLE_ADMIN, Role.ROLE_ARCHIVARIUS, Role.ROLE_SCRIBE);
+        List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE);
 
         if (Collections.disjoint(userRoles, allowedRoles)) {
-            throw new ForbiddenException("User lacks the necessary authorities to create a source");
+            throw new ForbiddenException("Access denied");
         }
 
         Source source = getSource(id).get();
@@ -163,13 +165,30 @@ public class SourceServiceImpl implements SourceService {
     public void delete(Long id) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
-        List<Role> allowedRoles = Arrays.asList(Role.ROLE_ADMIN, Role.ROLE_ARCHIVARIUS);
+        List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS);
 
         if (Collections.disjoint(userRoles, allowedRoles)) {
-            throw new ForbiddenException("User lacks the necessary authorities to create a source");
+            throw new ForbiddenException("Access denied");
         }
 
         deleteSource(id);
+    }
+
+    @Override
+    public SourceDto addImage(Long id, ImageDto imageDto) {
+        User user = userHolder.getUser();
+        List<Role> userRoles = user.getRoles();
+        List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE, ROLE_CONTRIBUTOR);
+
+        if (Collections.disjoint(userRoles, allowedRoles)) {
+            throw new ForbiddenException("Access denied");
+        }
+
+        Source source = getSource(id)
+                .orElseThrow(() -> new NoSuchElementException("Source with id " + id + "not found"));
+        ImageDto result = restCaller.call("http://image/api/image", POST, imageDto, ImageDto.class);
+        source.getImages().add(result.getObjectId());
+        return saveSource(source).toSourceDto();
     }
 
     @HystrixCommand(commandProperties = {

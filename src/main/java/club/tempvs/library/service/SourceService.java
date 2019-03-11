@@ -1,6 +1,7 @@
 package club.tempvs.library.service;
 
 import club.tempvs.library.dto.FindSourceDto;
+import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.dto.SourceDto;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface SourceService {
     SourceDto updateDescription(Long id, String description);
 
     void delete(Long id);
+
+    SourceDto addImage(Long id, ImageDto imageDto);
 }

@@ -7,6 +7,8 @@ import static club.tempvs.library.domain.Source.Period;
 import club.tempvs.library.domain.Source;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class SourceDto {
 
@@ -16,6 +18,7 @@ public class SourceDto {
     private Classification classification;
     private Type type;
     private Period period;
+    private List<String> images;
 
     public Source toSource() {
         Source source = new Source();

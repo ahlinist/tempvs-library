@@ -41,6 +41,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-zuul'
 	implementation "org.postgresql:postgresql:${postgresVersion}"
 	implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
 	implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
@@ -57,7 +58,7 @@ dependencies {
 	liquibaseRuntime "org.postgresql:postgresql:${postgresVersion}"
 	liquibaseRuntime 'org.liquibase.ext:liquibase-hibernate5:3.6'
 	//amqp
-	compile 'com.rabbitmq:amqp-client:3.3.4'
+	implementation 'com.rabbitmq:amqp-client:3.3.4'
 }
 
 dependencyManagement {
