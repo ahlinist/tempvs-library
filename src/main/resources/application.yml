@@ -44,8 +44,6 @@ amqp:
   enabled: true
   url: ${CLOUDAMQP_URL}
   timeout: 30000
-url:
-  prefix: 'https://'
 ---
 spring:
   profiles: local
@@ -56,5 +54,3 @@ eureka:
     nonSecurePort: 8085
     homePageUrl: http://${eureka.instance.hostname}/
     password: password
-url:
-  prefix: 'http://'

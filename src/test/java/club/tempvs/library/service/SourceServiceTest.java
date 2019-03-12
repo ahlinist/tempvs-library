@@ -3,8 +3,8 @@ package club.tempvs.library.service;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import static club.tempvs.library.domain.Source.*;
-import static org.springframework.http.HttpMethod.POST;
 
+import club.tempvs.library.clients.ImageClient;
 import club.tempvs.library.dto.ErrorsDto;
 import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.ImageDto;
@@ -16,7 +16,6 @@ import club.tempvs.library.domain.User;
 import club.tempvs.library.holder.UserHolder;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.service.impl.SourceServiceImpl;
-import club.tempvs.library.util.RestCaller;
 import club.tempvs.library.util.ValidationHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,11 +50,11 @@ public class SourceServiceTest {
     @Mock
     private UserHolder userHolder;
     @Mock
-    private RestCaller restCaller;
+    private ImageClient imageClient;
 
     @Before
     public void setUp() {
-        service = new SourceServiceImpl(sourceRepository, validationHelper, userHolder, restCaller);
+        service = new SourceServiceImpl(sourceRepository, validationHelper, userHolder, imageClient);
     }
 
     @Test
@@ -410,7 +409,7 @@ public class SourceServiceTest {
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
         when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
-        when(restCaller.call("image/api/image", POST, imageDto, ImageDto.class)).thenReturn(imageDto);
+        when(imageClient.store(imageDto)).thenReturn(imageDto);
         when(sourceRepository.save(source)).thenReturn(source);
         when(source.toSourceDto()).thenReturn(sourceDto);
 
@@ -419,7 +418,7 @@ public class SourceServiceTest {
         verify(userHolder).getUser();
         verify(user).getRoles();
         verify(sourceRepository).findById(id);
-        verify(restCaller).call("image/api/image", POST, imageDto, ImageDto.class);
+        verify(imageClient).store(imageDto);
         verify(source).getImages();
         verify(imageDto).getObjectId();
         verify(sourceRepository).save(source);

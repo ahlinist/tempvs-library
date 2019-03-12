@@ -6,10 +6,10 @@ import static club.tempvs.library.domain.Source.Period;
 import static club.tempvs.library.domain.Source.Classification;
 import static club.tempvs.library.domain.Source.Type;
 import static java.util.stream.Collectors.toList;
-import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static club.tempvs.library.model.Role.*;
 
+import club.tempvs.library.clients.ImageClient;
 import club.tempvs.library.dto.ErrorsDto;
 import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.ImageDto;
@@ -21,7 +21,6 @@ import club.tempvs.library.domain.User;
 import club.tempvs.library.holder.UserHolder;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.service.SourceService;
-import club.tempvs.library.util.RestCaller;
 import club.tempvs.library.util.ValidationHelper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
@@ -49,7 +48,7 @@ public class SourceServiceImpl implements SourceService {
     private final SourceRepository sourceRepository;
     private final ValidationHelper validationHelper;
     private final UserHolder userHolder;
-    private final RestCaller restCaller;
+    private final ImageClient imageClient;
 
     @Override
     public SourceDto create(SourceDto sourceDto) {
@@ -186,7 +185,7 @@ public class SourceServiceImpl implements SourceService {
 
         Source source = getSource(id)
                 .orElseThrow(() -> new NoSuchElementException("Source with id " + id + "not found"));
-        ImageDto result = restCaller.call("image/api/image", POST, imageDto, ImageDto.class);
+        ImageDto result = imageClient.store(imageDto);
         source.getImages().add(result.getObjectId());
         return saveSource(source).toSourceDto();
     }
