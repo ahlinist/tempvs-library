@@ -186,7 +186,7 @@ public class SourceServiceImpl implements SourceService {
 
         Source source = getSource(id)
                 .orElseThrow(() -> new NoSuchElementException("Source with id " + id + "not found"));
-        ImageDto result = restCaller.call("http://image/api/image", POST, imageDto, ImageDto.class);
+        ImageDto result = restCaller.call("image/api/image", POST, imageDto, ImageDto.class);
         source.getImages().add(result.getObjectId());
         return saveSource(source).toSourceDto();
     }

@@ -410,7 +410,7 @@ public class SourceServiceTest {
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
         when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
-        when(restCaller.call("http://image/api/image", POST, imageDto, ImageDto.class)).thenReturn(imageDto);
+        when(restCaller.call("image/api/image", POST, imageDto, ImageDto.class)).thenReturn(imageDto);
         when(sourceRepository.save(source)).thenReturn(source);
         when(source.toSourceDto()).thenReturn(sourceDto);
 
@@ -419,7 +419,7 @@ public class SourceServiceTest {
         verify(userHolder).getUser();
         verify(user).getRoles();
         verify(sourceRepository).findById(id);
-        verify(restCaller).call("http://image/api/image", POST, imageDto, ImageDto.class);
+        verify(restCaller).call("image/api/image", POST, imageDto, ImageDto.class);
         verify(source).getImages();
         verify(imageDto).getObjectId();
         verify(sourceRepository).save(source);
