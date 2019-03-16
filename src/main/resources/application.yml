@@ -45,8 +45,11 @@ amqp:
   url: ${CLOUDAMQP_URL}
   timeout: 30000
 feign:
-  hystrix:
-    enabled: false
+  client:
+    config:
+      default:
+        connectTimeout: 160000000
+        readTimeout: 160000000
 ---
 spring:
   profiles: local
