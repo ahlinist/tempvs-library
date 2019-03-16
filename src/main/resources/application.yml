@@ -44,6 +44,9 @@ amqp:
   enabled: true
   url: ${CLOUDAMQP_URL}
   timeout: 30000
+feign:
+  hystrix:
+    enabled: false
 ---
 spring:
   profiles: local
