@@ -33,11 +33,9 @@ eureka:
       defaultZone: ${EUREKA_URL:http://user:password@localhost:8084}/eureka/
   instance:
     hostname: ${DOMAIN_NAME:localhost}
-    secure-port-enabled: true
-    non-secure-port-enabled: false
     statusPageUrl: https://${eureka.instance.hostname}/info
     healthCheckUrl: https://${eureka.instance.hostname}/health
-    homePageUrl: https://${eureka.instance.hostname}:${server.port}/
+    homePageUrl: https://${eureka.instance.hostname}/
   password: ${EUREKA_PASSWORD:password}
 security:
   user:
@@ -51,6 +49,4 @@ spring:
   profiles: local
 eureka:
   instance:
-    non-secure-port-enabled: true
-    nonSecurePort: 8085
     homePageUrl: http://${eureka.instance.hostname}:${server.port}/
