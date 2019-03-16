@@ -53,4 +53,4 @@ eureka:
   instance:
     non-secure-port-enabled: true
     nonSecurePort: 8085
-    homePageUrl: http://${eureka.instance.hostname}/
+    homePageUrl: http://${eureka.instance.hostname}:${eureka.instance.nonSecurePort}/
