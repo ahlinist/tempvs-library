@@ -37,7 +37,7 @@ eureka:
     non-secure-port-enabled: false
     statusPageUrl: https://${eureka.instance.hostname}/info
     healthCheckUrl: https://${eureka.instance.hostname}/health
-    homePageUrl: https://${eureka.instance.hostname}/
+    homePageUrl: https://${eureka.instance.hostname}:${server.port}/
   password: ${EUREKA_PASSWORD:password}
 security:
   user:
@@ -53,4 +53,4 @@ eureka:
   instance:
     non-secure-port-enabled: true
     nonSecurePort: 8085
-    homePageUrl: http://${eureka.instance.hostname}:${eureka.instance.nonSecurePort}/
+    homePageUrl: http://${eureka.instance.hostname}:${server.port}/
