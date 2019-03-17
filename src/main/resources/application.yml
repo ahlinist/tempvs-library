@@ -34,6 +34,10 @@ eureka:
     statusPageUrl: https://${eureka.instance.hostname}/info
     healthCheckUrl: https://${eureka.instance.hostname}/health
     homePageUrl: https://${eureka.instance.hostname}/
+    secure-port-enabled: false
+    non-secure-port-enabled: true
+    secure-port: 443
+    non-secure-port: 80
   password: ${EUREKA_PASSWORD:password}
 security:
   user:
