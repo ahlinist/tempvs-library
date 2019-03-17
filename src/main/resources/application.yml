@@ -41,6 +41,9 @@ eureka:
     secure-port: 443
     non-secure-port: 80
   password: ${EUREKA_PASSWORD:password}
+ribbon:
+  eager-load:
+    enabled: true
 security:
   user:
     password: ${eureka.password}
@@ -54,3 +57,4 @@ spring:
 eureka:
   instance:
     homePageUrl: http://${eureka.instance.hostname}:8085/
+    non-secure-port: 8085
