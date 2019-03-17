@@ -4,6 +4,7 @@ import static club.tempvs.library.domain.Source.Classification;
 import static club.tempvs.library.domain.Source.Type;
 import static club.tempvs.library.domain.Source.Period;
 
+import club.tempvs.library.domain.Image;
 import club.tempvs.library.domain.Source;
 import lombok.Data;
 
@@ -18,7 +19,7 @@ public class SourceDto {
     private Classification classification;
     private Type type;
     private Period period;
-    private List<String> images;
+    private List<Image> images;
 
     public Source toSource() {
         Source source = new Source();

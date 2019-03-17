@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +31,10 @@ public class Source {
     private Type type;
     @NotNull
     private Period period;
-    @ElementCollection
-    private List<String> images = new ArrayList<>();
-    @ElementCollection
-    private List<Long> comments = new ArrayList<>();
+    @Size(max = 10)
+    @OrderColumn
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Image> images = new ArrayList<>();
     @CreatedDate
     private Instant createdDate;
 

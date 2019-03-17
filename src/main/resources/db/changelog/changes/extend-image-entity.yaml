@@ -1,0 +1,93 @@
+databaseChangeLog:
+- changeSet:
+    id: 1552828480446-1
+    author: albvs (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              primaryKey: true
+              primaryKeyName: imagePK
+            name: object_id
+            type: VARCHAR(255)
+        - column:
+            name: file_name
+            type: VARCHAR(255)
+        - column:
+            name: image_info
+            type: VARCHAR(255)
+        tableName: image
+- changeSet:
+    id: 1552828480446-2
+    author: albvs (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: images_object_id
+            type: varchar(255)
+        tableName: source_images
+- changeSet:
+    id: 1552828480446-3
+    author: albvs (generated)
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+            name: images_order
+            type: int4
+        tableName: source_images
+- changeSet:
+    id: 1552828480446-4
+    author: albvs (generated)
+    changes:
+    - addPrimaryKey:
+        columnNames: source_id, images_order
+        tableName: source_images
+- changeSet:
+    id: 1552828480446-5
+    author: albvs (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: images_object_id
+        constraintName: UK_fsxsg5oxxb2ss9tyy83cst59u
+        tableName: source_images
+- changeSet:
+    id: 1552828480446-6
+    author: albvs (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: images_object_id
+        baseTableName: source_images
+        constraintName: FKn1n6vgn7nygfebcxjoh2t7y46
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: object_id
+        referencedTableName: image
+        validate: true
+- changeSet:
+    id: 1552828480446-7
+    author: albvs (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: source_comments
+        constraintName: FKk52pkcfksg4nkagb3xi2s3s4l
+- changeSet:
+    id: 1552828480446-8
+    author: albvs (generated)
+    changes:
+    - dropTable:
+        tableName: source_comments
+- changeSet:
+    id: 1552828480446-9
+    author: albvs (generated)
+    changes:
+    - dropColumn:
+        columnName: images
+        tableName: source_images
+

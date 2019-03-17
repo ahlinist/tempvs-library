@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import static club.tempvs.library.domain.Source.*;
 
 import club.tempvs.library.clients.ImageClient;
+import club.tempvs.library.domain.Image;
 import club.tempvs.library.dto.ErrorsDto;
 import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.ImageDto;
@@ -43,6 +44,8 @@ public class SourceServiceTest {
     private ErrorsDto errorsDto;
     @Mock
     private ImageDto imageDto;
+    @Mock
+    private Image image;
     @Mock
     private SourceRepository sourceRepository;
     @Mock
@@ -410,6 +413,7 @@ public class SourceServiceTest {
         when(user.getRoles()).thenReturn(roles);
         when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
         when(imageClient.store(imageDto)).thenReturn(imageDto);
+        when(imageDto.toImage()).thenReturn(image);
         when(sourceRepository.save(source)).thenReturn(source);
         when(source.toSourceDto()).thenReturn(sourceDto);
 
@@ -420,7 +424,7 @@ public class SourceServiceTest {
         verify(sourceRepository).findById(id);
         verify(imageClient).store(imageDto);
         verify(source).getImages();
-        verify(imageDto).getObjectId();
+        verify(imageDto).toImage();
         verify(sourceRepository).save(source);
         verify(source).toSourceDto();
         verifyNoMoreInteractions(sourceRepository, userHolder, user, imageDto, source, sourceDto);

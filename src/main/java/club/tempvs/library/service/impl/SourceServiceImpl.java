@@ -186,7 +186,7 @@ public class SourceServiceImpl implements SourceService {
         Source source = getSource(id)
                 .orElseThrow(() -> new NoSuchElementException("Source with id " + id + "not found"));
         ImageDto result = imageClient.store(imageDto);
-        source.getImages().add(result.getObjectId());
+        source.getImages().add(result.toImage());
         return saveSource(source).toSourceDto();
     }
 
