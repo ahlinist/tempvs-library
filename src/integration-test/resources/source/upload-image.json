@@ -1,0 +1,5 @@
+{
+  "content": "base 64 encoded image byte array",
+  "imageInfo": "image info provided by uploader",
+  "fileName": "test.jpg"
+}
