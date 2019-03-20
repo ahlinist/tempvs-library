@@ -10,6 +10,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 import static club.tempvs.library.model.Role.*;
 
 import club.tempvs.library.clients.ImageClient;
+import club.tempvs.library.domain.Image;
 import club.tempvs.library.dto.ErrorsDto;
 import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.ImageDto;
@@ -170,7 +171,13 @@ public class SourceServiceImpl implements SourceService {
             throw new ForbiddenException("Access denied");
         }
 
-        deleteSource(id);
+        Source source = getSource(id).orElseThrow(() -> new NoSuchElementException("Source with id " + id + " not found"));
+        List<String> objectIds = source.getImages()
+                .stream()
+                .map(Image::getObjectId)
+                .collect(toList());
+        imageClient.delete(objectIds);
+        deleteSource(source);
     }
 
     @Override
@@ -215,7 +222,7 @@ public class SourceServiceImpl implements SourceService {
     @HystrixCommand(commandProperties = {
             @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
     })
-    private void deleteSource(Long id) {
-        sourceRepository.deleteById(id);
+    private void deleteSource(Source source) {
+        sourceRepository.delete(source);
     }
 }

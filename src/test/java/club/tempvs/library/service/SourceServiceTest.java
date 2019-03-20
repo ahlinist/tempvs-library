@@ -392,16 +392,37 @@ public class SourceServiceTest {
     public void testDeleteSource() {
         Long id = 1L;
         List<Role> roles = Arrays.asList(Role.ROLE_ARCHIVARIUS);
+        List<Image> images = Arrays.asList(image, image);
+        String objectId = "testObjectId";
+        List<String> objectIds = Arrays.asList(objectId, objectId);
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
+        when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
+        when(source.getImages()).thenReturn(images);
+        when(image.getObjectId()).thenReturn(objectId);
 
         service.delete(id);
 
         verify(userHolder).getUser();
         verify(user).getRoles();
-        verify(sourceRepository).deleteById(id);
-        verifyNoMoreInteractions(sourceRepository, userHolder, user);
+        verify(sourceRepository).findById(id);
+        verify(source).getImages();
+        verify(image, times(2)).getObjectId();
+        verify(imageClient).delete(objectIds);
+        verify(sourceRepository).delete(source);
+        verifyNoMoreInteractions(sourceRepository, userHolder, user, imageClient);
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testDeleteSourceForMissingOne() {
+        Long id = 1L;
+        List<Role> roles = Arrays.asList(Role.ROLE_ARCHIVARIUS);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+
+        service.delete(id);
     }
 
     @Test
