@@ -1,24 +1,25 @@
 package club.tempvs.library.service;
 
-import club.tempvs.library.dto.FindSourceDto;
+import static club.tempvs.library.domain.Source.*;
+
+import club.tempvs.library.domain.Source;
 import club.tempvs.library.dto.ImageDto;
-import club.tempvs.library.dto.SourceDto;
 
 import java.util.List;
 
 public interface SourceService {
 
-    SourceDto create(SourceDto sourceDto);
+    Source create(Source source);
 
-    SourceDto get(Long id);
+    Source get(Long id);
 
-    List<SourceDto> find(FindSourceDto findSourceDto, int page, int size);
+    List<Source> find(String query, Period period, List<Classification> classifications, List<Type> types, int page, int size);
 
-    SourceDto updateName(Long id, String name);
+    Source updateName(Long id, String name);
 
-    SourceDto updateDescription(Long id, String description);
+    Source updateDescription(Long id, String description);
 
     void delete(Long id);
 
-    SourceDto addImage(Long id, ImageDto imageDto);
+    Source addImage(Long sourceId, ImageDto imageDto);
 }

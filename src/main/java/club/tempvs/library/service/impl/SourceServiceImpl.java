@@ -12,9 +12,7 @@ import static club.tempvs.library.model.Role.*;
 import club.tempvs.library.clients.ImageClient;
 import club.tempvs.library.domain.Image;
 import club.tempvs.library.dto.ErrorsDto;
-import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.ImageDto;
-import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.dao.SourceRepository;
 import club.tempvs.library.domain.Source;
@@ -52,7 +50,7 @@ public class SourceServiceImpl implements SourceService {
     private final ImageClient imageClient;
 
     @Override
-    public SourceDto create(SourceDto sourceDto) {
+    public Source create(Source source) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
         List<Role> allowedRoles =
@@ -64,54 +62,43 @@ public class SourceServiceImpl implements SourceService {
 
         ErrorsDto errorsDto = validationHelper.getErrors();
 
-        if (isBlank(sourceDto.getName())) {
+        if (isBlank(source.getName())) {
             validationHelper.addError(errorsDto, NAME_FIELD, NAME_BLANK_ERROR);
         }
 
-        if (isNull(sourceDto.getClassification())) {
+        if (isNull(source.getClassification())) {
             validationHelper.addError(errorsDto, CLASSIFICATION_FIELD, CLASSIFICATION_MISSING_ERROR);
         }
 
-        if (isNull(sourceDto.getPeriod())) {
+        if (isNull(source.getPeriod())) {
             validationHelper.addError(errorsDto, PERIOD_FIELD, PERIOD_MISSING_ERROR);
         }
 
-        if (isNull(sourceDto.getType())) {
+        if (isNull(source.getType())) {
             validationHelper.addError(errorsDto, TYPE_FIELD, TYPE_MISSING_ERROR);
         }
 
         validationHelper.processErrors(errorsDto);
-        Source source = sourceDto.toSource();
-        return saveSource(source).toSourceDto();
+        return saveSource(source);
     }
 
-    public SourceDto get(Long id) {
-        return getSource(id)
-                .map(Source::toSourceDto)
-                .get();
+    public Source get(Long id) {
+        return getSource(id).get();
     }
 
     @Override
-    public List<SourceDto> find(FindSourceDto findSourceDto, int page, int size) {
-        String query = findSourceDto.getQuery();
-
+    public List<Source> find(String query, Period period, List<Classification> classifications, List<Type> types, int page, int size) {
         if (isBlank(query)) {
             query = "";
         }
-
-        Period period = findSourceDto.getPeriod();
 
         if (period == null) {
             throw new IllegalStateException("Period is not defined");
         }
 
-        List<Classification> classifications = findSourceDto.getClassifications();
-
         if (isEmpty(classifications)) {
             classifications = Arrays.asList(Classification.values());
         }
-
-        List<Type> types = findSourceDto.getTypes();
 
         if (isEmpty(types)) {
             types = Arrays.asList(Type.values());
@@ -119,13 +106,11 @@ public class SourceServiceImpl implements SourceService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
 
-        return findSources(period, types, classifications, query, pageable).stream()
-                .map(Source::toSourceDto)
-                .collect(toList());
+        return findSources(period, types, classifications, query, pageable);
     }
 
     @Override
-    public SourceDto updateName(Long id, String name) {
+    public Source updateName(Long id, String name) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
         List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE);
@@ -143,11 +128,11 @@ public class SourceServiceImpl implements SourceService {
         validationHelper.processErrors(errorsDto);
         Source source = getSource(id).get();
         source.setName(name);
-        return saveSource(source).toSourceDto();
+        return saveSource(source);
     }
 
     @Override
-    public SourceDto updateDescription(Long id, String description) {
+    public Source updateDescription(Long id, String description) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
         List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE);
@@ -158,7 +143,7 @@ public class SourceServiceImpl implements SourceService {
 
         Source source = getSource(id).get();
         source.setDescription(description);
-        return saveSource(source).toSourceDto();
+        return saveSource(source);
     }
 
     @Override
@@ -181,7 +166,7 @@ public class SourceServiceImpl implements SourceService {
     }
 
     @Override
-    public SourceDto addImage(Long id, ImageDto imageDto) {
+    public Source addImage(Long sourceId, ImageDto imageDto) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
         List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE, ROLE_CONTRIBUTOR);
@@ -190,11 +175,11 @@ public class SourceServiceImpl implements SourceService {
             throw new ForbiddenException("Access denied");
         }
 
-        Source source = getSource(id)
-                .orElseThrow(() -> new NoSuchElementException("Source with id " + id + "not found"));
+        Source source = getSource(sourceId)
+                .orElseThrow(() -> new NoSuchElementException("Source with id " + sourceId + "not found"));
         ImageDto result = imageClient.store(imageDto);
         source.getImages().add(result.toImage());
-        return saveSource(source).toSourceDto();
+        return saveSource(source);
     }
 
     @HystrixCommand(commandProperties = {

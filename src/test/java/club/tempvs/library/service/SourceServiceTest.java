@@ -7,9 +7,7 @@ import static club.tempvs.library.domain.Source.*;
 import club.tempvs.library.clients.ImageClient;
 import club.tempvs.library.domain.Image;
 import club.tempvs.library.dto.ErrorsDto;
-import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.ImageDto;
-import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.exception.ForbiddenException;
 import club.tempvs.library.dao.SourceRepository;
 import club.tempvs.library.domain.Source;
@@ -39,8 +37,6 @@ public class SourceServiceTest {
     @Mock
     private Source source;
     @Mock
-    private SourceDto sourceDto;
-    @Mock
     private ErrorsDto errorsDto;
     @Mock
     private ImageDto imageDto;
@@ -64,20 +60,19 @@ public class SourceServiceTest {
     public void testCreate() {
         List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
         String sourceName = "lorica segmentata";
-        SourceDto sourceDto = new SourceDto();
-        sourceDto.setName(sourceName);
-        sourceDto.setClassification(Classification.ARMOR);
-        sourceDto.setType(Type.ARCHAEOLOGICAL);
-        sourceDto.setPeriod(Period.ANTIQUITY);
-        sourceDto.setImages(Collections.emptyList());
-        Source source = sourceDto.toSource();
+        Source source = new Source();
+        source.setName(sourceName);
+        source.setClassification(Classification.ARMOR);
+        source.setType(Type.ARCHAEOLOGICAL);
+        source.setPeriod(Period.ANTIQUITY);
+        source.setImages(Collections.emptyList());
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
         when(validationHelper.getErrors()).thenReturn(errorsDto);
         when(sourceRepository.save(source)).thenReturn(source);
 
-        SourceDto result = service.create(sourceDto);
+        Source result = service.create(source);
 
         verify(userHolder).getUser();
         verify(user).getRoles();
@@ -86,20 +81,19 @@ public class SourceServiceTest {
         verify(sourceRepository).save(source);
         verifyNoMoreInteractions(user, sourceRepository, validationHelper);
 
-        assertEquals("Source is returned", sourceDto, result);
+        assertEquals("Source is returned", source, result);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateForInvalidPayload() {
+    public void testCreateForMissingName() {
         List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
-        SourceDto sourceDto = new SourceDto();
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
         when(validationHelper.getErrors()).thenReturn(errorsDto);
         doThrow(new IllegalArgumentException()).when(validationHelper).processErrors(errorsDto);
 
-        service.create(sourceDto);
+        service.create(new Source());
     }
 
     @Test(expected = ForbiddenException.class)
@@ -109,7 +103,7 @@ public class SourceServiceTest {
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
 
-        service.create(new SourceDto());
+        service.create(new Source());
     }
 
     @Test
@@ -117,15 +111,13 @@ public class SourceServiceTest {
         Long id = 1L;
 
         when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
-        when(source.toSourceDto()).thenReturn(sourceDto);
 
-        SourceDto result = service.get(id);
+        Source result = service.get(id);
 
         verify(sourceRepository).findById(id);
-        verify(source).toSourceDto();
         verifyNoMoreInteractions(sourceRepository, source);
 
-        assertEquals("Source object is returned", sourceDto, result);
+        assertEquals("Source object is returned", source, result);
     }
 
     @Test(expected = NoSuchElementException.class)
@@ -145,20 +137,14 @@ public class SourceServiceTest {
         Period period = Period.EARLY_MIDDLE_AGES;
         List<Classification> classifications = Arrays.asList(Classification.ARMOR);
         List<Type> types = Arrays.asList(Type.WRITTEN);
-        FindSourceDto findSourceDto = new FindSourceDto();
-        findSourceDto.setQuery(query);
-        findSourceDto.setPeriod(period);
-        findSourceDto.setClassifications(classifications);
-        findSourceDto.setTypes(types);
         List<Source> sources = Arrays.asList(source, source);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
 
         when(sourceRepository.find(period, types, classifications, query, pageable)).thenReturn(sources);
 
-        List<SourceDto> result = service.find(findSourceDto, page, size);
+        List<Source> result = service.find(query, period, classifications, types, page, size);
 
         verify(sourceRepository).find(period, types, classifications, query, pageable);
-        verify(source, times(2)).toSourceDto();
         verifyNoMoreInteractions(sourceRepository, source);
 
         assertEquals("2 sourceDtos are returned", 2, result.size());
@@ -172,19 +158,14 @@ public class SourceServiceTest {
         Period period = Period.EARLY_MIDDLE_AGES;
         List<Classification> classifications = Arrays.asList(Classification.values());
         List<Type> types = Arrays.asList(Type.WRITTEN);
-        FindSourceDto findSourceDto = new FindSourceDto();
-        findSourceDto.setQuery(query);
-        findSourceDto.setPeriod(period);
-        findSourceDto.setTypes(types);
         List<Source> sources = Arrays.asList(source, source);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
 
         when(sourceRepository.find(period, types, classifications, query, pageable)).thenReturn(sources);
 
-        List<SourceDto> result = service.find(findSourceDto, page, size);
+        List<Source> result = service.find(query, period, classifications, types, page, size);
 
         verify(sourceRepository).find(period, types, classifications, query, pageable);
-        verify(source, times(2)).toSourceDto();
         verifyNoMoreInteractions(sourceRepository, source);
 
         assertEquals("2 sourceDtos are returned", 2, result.size());
@@ -198,19 +179,14 @@ public class SourceServiceTest {
         Period period = Period.EARLY_MIDDLE_AGES;
         List<Classification> classifications = Arrays.asList(Classification.FOOTWEAR);
         List<Type> types = Arrays.asList(Type.values());
-        FindSourceDto findSourceDto = new FindSourceDto();
-        findSourceDto.setQuery(query);
-        findSourceDto.setPeriod(period);
-        findSourceDto.setClassifications(classifications);
         List<Source> sources = Arrays.asList(source, source);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
 
         when(sourceRepository.find(period, types, classifications, query, pageable)).thenReturn(sources);
 
-        List<SourceDto> result = service.find(findSourceDto, page, size);
+        List<Source> result = service.find(query, period, classifications, types , page, size);
 
         verify(sourceRepository).find(period, types, classifications, query, pageable);
-        verify(source, times(2)).toSourceDto();
         verifyNoMoreInteractions(sourceRepository, source);
 
         assertEquals("2 sourceDtos are returned", 2, result.size());
@@ -223,12 +199,8 @@ public class SourceServiceTest {
         String query = "query";
         List<Classification> classifications = Arrays.asList(Classification.ARMOR);
         List<Type> types = Arrays.asList(Type.WRITTEN);
-        FindSourceDto findSourceDto = new FindSourceDto();
-        findSourceDto.setQuery(query);
-        findSourceDto.setClassifications(classifications);
-        findSourceDto.setTypes(types);
 
-        service.find(findSourceDto, page, size);
+        service.find(query, null, classifications, types, page, size);
     }
 
     @Test
@@ -240,20 +212,14 @@ public class SourceServiceTest {
         Period period = Period.EARLY_MIDDLE_AGES;
         List<Classification> classifications = Arrays.asList(Classification.ARMOR);
         List<Type> types = Arrays.asList(Type.WRITTEN);
-        FindSourceDto findSourceDto = new FindSourceDto();
-        findSourceDto.setQuery(query);
-        findSourceDto.setPeriod(period);
-        findSourceDto.setClassifications(classifications);
-        findSourceDto.setTypes(types);
         List<Source> sources = Arrays.asList(source, source);
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "createdDate");
 
         when(sourceRepository.find(period, types, classifications, correctedQuery, pageable)).thenReturn(sources);
 
-        List<SourceDto> result = service.find(findSourceDto, page, size);
+        List<Source> result = service.find(query, period, classifications, types, page, size);
 
         verify(sourceRepository).find(period, types, classifications, correctedQuery, pageable);
-        verify(source, times(2)).toSourceDto();
         verifyNoMoreInteractions(sourceRepository, source);
 
         assertEquals("2 sourceDtos are returned", 2, result.size());
@@ -310,9 +276,8 @@ public class SourceServiceTest {
         when(validationHelper.getErrors()).thenReturn(errorsDto);
         when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
         when(sourceRepository.save(source)).thenReturn(source);
-        when(source.toSourceDto()).thenReturn(sourceDto);
 
-        SourceDto result = service.updateName(id, name);
+        Source result = service.updateName(id, name);
 
         verify(userHolder).getUser();
         verify(user).getRoles();
@@ -321,10 +286,9 @@ public class SourceServiceTest {
         verify(sourceRepository).findById(id);
         verify(source).setName(name);
         verify(sourceRepository).save(source);
-        verify(source).toSourceDto();
-        verifyNoMoreInteractions(sourceRepository, source, sourceDto, userHolder, user, validationHelper);
+        verifyNoMoreInteractions(sourceRepository, source, userHolder, user, validationHelper);
 
-        assertEquals("SourceDto object is returned", sourceDto, result);
+        assertEquals("SourceDto object is returned", source, result);
     }
 
     @Test(expected = ForbiddenException.class)
@@ -362,19 +326,17 @@ public class SourceServiceTest {
         when(user.getRoles()).thenReturn(roles);
         when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
         when(sourceRepository.save(source)).thenReturn(source);
-        when(source.toSourceDto()).thenReturn(sourceDto);
 
-        SourceDto result = service.updateDescription(id, description);
+        Source result = service.updateDescription(id, description);
 
         verify(userHolder).getUser();
         verify(user).getRoles();
         verify(sourceRepository).findById(id);
         verify(source).setDescription(description);
         verify(sourceRepository).save(source);
-        verify(source).toSourceDto();
-        verifyNoMoreInteractions(sourceRepository, source, sourceDto, userHolder, user, validationHelper);
+        verifyNoMoreInteractions(sourceRepository, source, userHolder, user, validationHelper);
 
-        assertEquals("SourceDto object is returned", sourceDto, result);
+        assertEquals("SourceDto object is returned", source, result);
     }
 
     @Test(expected = ForbiddenException.class)
@@ -436,9 +398,8 @@ public class SourceServiceTest {
         when(imageClient.store(imageDto)).thenReturn(imageDto);
         when(imageDto.toImage()).thenReturn(image);
         when(sourceRepository.save(source)).thenReturn(source);
-        when(source.toSourceDto()).thenReturn(sourceDto);
 
-        SourceDto result = service.addImage(id, imageDto);
+        Source result = service.addImage(id, imageDto);
 
         verify(userHolder).getUser();
         verify(user).getRoles();
@@ -447,10 +408,9 @@ public class SourceServiceTest {
         verify(source).getImages();
         verify(imageDto).toImage();
         verify(sourceRepository).save(source);
-        verify(source).toSourceDto();
-        verifyNoMoreInteractions(sourceRepository, userHolder, user, imageDto, source, sourceDto);
+        verifyNoMoreInteractions(sourceRepository, userHolder, user, imageDto, source);
 
-        assertEquals("ImageDto is returned", sourceDto, result);
+        assertEquals("ImageDto is returned", source, result);
     }
 
     @Test(expected = ForbiddenException.class)

@@ -2,7 +2,9 @@ package club.tempvs.library.controller;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
+import static club.tempvs.library.domain.Source.*;
 
+import club.tempvs.library.domain.Source;
 import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.dto.SourceDto;
@@ -26,6 +28,8 @@ public class SourceControllerTest {
     @Mock
     private SourceDto sourceDto;
     @Mock
+    private Source source;
+    @Mock
     private ImageDto imageDto;
     @Mock
     private FindSourceDto findSourceDto;
@@ -39,42 +43,57 @@ public class SourceControllerTest {
 
     @Test
     public void testCreate() {
-        when(sourceService.create(sourceDto)).thenReturn(sourceDto);
+        when(sourceService.create(source)).thenReturn(source);
+        when(sourceDto.toSource()).thenReturn(source);
 
-        SourceDto result = controller.create(sourceDto);
+        Source result = controller.create(sourceDto);
 
-        verify(sourceService).create(sourceDto);
+        verify(sourceService).create(source);
         verifyNoMoreInteractions(sourceService);
 
-        assertEquals("SourceDto is returned", sourceDto, result);
+        assertEquals("SourceDto is returned", source, result);
     }
 
     @Test
     public void testGet() {
         Long id = 1L;
 
-        when(sourceService.get(id)).thenReturn(sourceDto);
+        when(sourceService.get(id)).thenReturn(source);
 
-        SourceDto result = controller.get(id);
+        Source result = controller.get(id);
 
         verify(sourceService).get(id);
         verifyNoMoreInteractions(sourceService);
 
-        assertEquals("SourceDto is returned", sourceDto, result);
+        assertEquals("SourceDto is returned", source, result);
     }
 
     @Test
     public void testFind() {
+        String query = "query";
+        List<Classification> classifications = Arrays.asList(Classification.OTHER);
+        List<Type> types = Arrays.asList(Type.OTHER);
         int page = 0;
         int size = 40;
+        List<Source> sources = Arrays.asList(source, source);
         List<SourceDto> sourceDtos = Arrays.asList(sourceDto, sourceDto);
 
-        when(sourceService.find(findSourceDto, page, size)).thenReturn(sourceDtos);
+        when(findSourceDto.getQuery()).thenReturn(query);
+        when(findSourceDto.getPeriod()).thenReturn(Period.OTHER);
+        when(findSourceDto.getClassifications()).thenReturn(classifications);
+        when(findSourceDto.getTypes()).thenReturn(types);
+        when(sourceService.find(query, Period.OTHER, classifications, types, page, size)).thenReturn(sources);
+        when(source.toSourceDto()).thenReturn(sourceDto);
 
         List<SourceDto> result = controller.find(findSourceDto, page, size);
 
-        verify(sourceService).find(findSourceDto, page, size);
-        verifyNoMoreInteractions(sourceService);
+        verify(sourceService).find(query, Period.OTHER, classifications, types, page, size);
+        verify(findSourceDto).getQuery();
+        verify(findSourceDto).getPeriod();
+        verify(findSourceDto).getClassifications();
+        verify(findSourceDto).getTypes();
+        verify(source, times(2)).toSourceDto();
+        verifyNoMoreInteractions(sourceService, findSourceDto, sourceDto);
 
         assertEquals("A list of sourceDtos is returned", sourceDtos, result);
     }
@@ -86,12 +105,12 @@ public class SourceControllerTest {
         Map<String, String> payload = new HashMap<>();
         payload.put("name", name);
 
-        when(sourceService.updateName(id, name)).thenReturn(sourceDto);
+        when(sourceService.updateName(id, name)).thenReturn(source);
 
         controller.updateName(id, payload);
 
         verify(sourceService).updateName(id, name);
-        verifyNoMoreInteractions(sourceService, sourceDto);
+        verifyNoMoreInteractions(sourceService, source);
     }
 
     @Test
@@ -101,12 +120,12 @@ public class SourceControllerTest {
         Map<String, String> payload = new HashMap<>();
         payload.put("description", description);
 
-        when(sourceService.updateDescription(id, description)).thenReturn(sourceDto);
+        when(sourceService.updateDescription(id, description)).thenReturn(source);
 
         controller.updateDescription(id, payload);
 
         verify(sourceService).updateDescription(id, description);
-        verifyNoMoreInteractions(sourceService, sourceDto);
+        verifyNoMoreInteractions(sourceService, source);
     }
 
     @Test
@@ -116,14 +135,15 @@ public class SourceControllerTest {
         controller.delete(id);
 
         verify(sourceService).delete(id);
-        verifyNoMoreInteractions(sourceService, sourceDto);
+        verifyNoMoreInteractions(sourceService);
     }
 
     @Test
     public void testAddImage() {
         Long id = 1L;
 
-        when(sourceService.addImage(id, imageDto)).thenReturn(sourceDto);
+        when(sourceService.addImage(id, imageDto)).thenReturn(source);
+        when(source.toSourceDto()).thenReturn(sourceDto);
 
         SourceDto result = controller.addImage(id, imageDto);
 

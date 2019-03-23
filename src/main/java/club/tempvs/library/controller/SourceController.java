@@ -1,5 +1,6 @@
 package club.tempvs.library.controller;
 
+import club.tempvs.library.domain.Source;
 import club.tempvs.library.dto.FindSourceDto;
 import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.dto.SourceDto;
@@ -12,6 +13,8 @@ import javax.validation.constraints.Max;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
+
 @RestController
 @RequestMapping("/api/source")
 @RequiredArgsConstructor
@@ -23,12 +26,12 @@ public class SourceController {
     private final SourceService sourceService;
 
     @PostMapping
-    public SourceDto create(@RequestBody SourceDto sourceDto) {
-        return sourceService.create(sourceDto);
+    public Source create(@RequestBody SourceDto sourceDto) {
+        return sourceService.create(sourceDto.toSource());
     }
 
     @GetMapping("/{id}")
-    public SourceDto get(@PathVariable Long id) {
+    public Source get(@PathVariable Long id) {
         return sourceService.get(id);
     }
 
@@ -38,7 +41,9 @@ public class SourceController {
             @RequestParam int page,
             @Max(MAX_SIZE_VALUE) @RequestParam int size) {
 
-        return sourceService.find(q, page, size);
+        return sourceService.find(q.getQuery(), q.getPeriod(), q.getClassifications(), q.getTypes(), page, size).stream()
+                .map(Source::toSourceDto)
+                .collect(toList());
     }
 
     @PatchMapping("/{id}/name")
@@ -61,6 +66,6 @@ public class SourceController {
 
     @PostMapping("/{id}/images")
     public SourceDto addImage(@PathVariable Long id, @RequestBody ImageDto imageDto) {
-        return sourceService.addImage(id, imageDto);
+        return sourceService.addImage(id, imageDto).toSourceDto();
     }
 }
