@@ -152,4 +152,20 @@ public class SourceControllerTest {
 
         assertEquals("ImageDto is returned back", sourceDto, result);
     }
+
+    @Test
+    public void testDeleteImage() {
+        Long sourceId = 1L;
+        String objectId = "objectId";
+
+        when(sourceService.deleteImage(sourceId, objectId)).thenReturn(source);
+        when(source.toSourceDto()).thenReturn(sourceDto);
+
+        SourceDto result = controller.deleteImage(sourceId, objectId);
+
+        verify(sourceService).deleteImage(sourceId, objectId);
+        verifyNoMoreInteractions(sourceService, imageDto);
+
+        assertEquals("ImageDto is returned back", sourceDto, result);
+    }
 }

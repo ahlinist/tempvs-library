@@ -1,10 +1,10 @@
 package club.tempvs.library.controller;
 
-import static club.tempvs.library.domain.Source.Classification;
-import static club.tempvs.library.domain.Source.Type;
-import static club.tempvs.library.domain.Source.Period;
+import static club.tempvs.library.domain.Source.*;
+import static java.util.Collections.emptyList;
 
 import club.tempvs.library.dao.SourceRepository;
+import club.tempvs.library.domain.Image;
 import club.tempvs.library.domain.Source;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.model.Role;
@@ -27,8 +27,10 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -102,7 +104,7 @@ public class SourceControllerIntegrationTest {
         Classification classification = Classification.ARMOR;
         Type type = Type.GRAPHIC;
         Period period = Period.CONTEMPORARY;
-        Source source = createSource(name, description, classification, type, period);
+        Source source = createSource(name, description, classification, type, period, emptyList());
         Long sourceId = source.getId();
 
         mvc.perform(get("/api/source/" + sourceId)
@@ -123,12 +125,12 @@ public class SourceControllerIntegrationTest {
         String encodedQuery = Base64.getEncoder().encodeToString(findSourceJson.getBytes());
 
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_USER);
-        createSource("name41", "desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES);
-        createSource("name11", "1desc", Classification.ARMOR, Type.GRAPHIC, Period.EARLY_MIDDLE_AGES);
-        createSource("name12", "desc2", Classification.CLOTHING, Type.WRITTEN, Period.CONTEMPORARY);
-        createSource("name13", "3desc", Classification.FOOTWEAR, Type.GRAPHIC, Period.EARLY_MIDDLE_AGES);
-        createSource("name32", "desc4", Classification.HOUSEHOLD, Type.GRAPHIC, Period.WWII);
-        createSource("name15", "5desc", Classification.HOUSEHOLD, Type.WRITTEN, Period.EARLY_MIDDLE_AGES);
+        createSource("name41", "desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES, emptyList());
+        createSource("name11", "1desc", Classification.ARMOR, Type.GRAPHIC, Period.EARLY_MIDDLE_AGES, emptyList());
+        createSource("name12", "desc2", Classification.CLOTHING, Type.WRITTEN, Period.CONTEMPORARY, emptyList());
+        createSource("name13", "3desc", Classification.FOOTWEAR, Type.GRAPHIC, Period.EARLY_MIDDLE_AGES, emptyList());
+        createSource("name32", "desc4", Classification.HOUSEHOLD, Type.GRAPHIC, Period.WWII, emptyList());
+        createSource("name15", "5desc", Classification.HOUSEHOLD, Type.WRITTEN, Period.EARLY_MIDDLE_AGES, emptyList());
 
         mvc.perform(get("/api/source?&page=0&size=40&q=" + encodedQuery)
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -158,7 +160,7 @@ public class SourceControllerIntegrationTest {
         String updateSourceNameJson = new String(Files.readAllBytes(updateSourceNameFile.toPath()));
 
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
-        Source source = createSource("old name", "desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES);
+        Source source = createSource("old name", "desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES, emptyList());
 
         mvc.perform(patch("/api/source/" + source.getId() + "/name")
                 .accept(APPLICATION_JSON_VALUE)
@@ -175,7 +177,7 @@ public class SourceControllerIntegrationTest {
         String updateSourceDescJson = new String(Files.readAllBytes(updateSourceDescFile.toPath()));
 
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
-        Source source = createSource("name", "old desc", Classification.WEAPON, Type.GRAPHIC, Period.WWI);
+        Source source = createSource("name", "old desc", Classification.WEAPON, Type.GRAPHIC, Period.WWI, emptyList());
 
         mvc.perform(patch("/api/source/" + source.getId() + "/description")
                 .accept(APPLICATION_JSON_VALUE)
@@ -189,7 +191,7 @@ public class SourceControllerIntegrationTest {
     @Test
     public void testDelete() throws Exception {
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_ARCHIVARIUS);
-        Source source = createSource("name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER);
+        Source source = createSource("name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER, emptyList());
 
         mvc.perform(delete("/api/source/" + source.getId())
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -200,7 +202,7 @@ public class SourceControllerIntegrationTest {
     @Test
     public void testDeleteForInsufficientRights() throws Exception {
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
-        Source source = createSource("name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER);
+        Source source = createSource("name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER, emptyList());
 
         mvc.perform(delete("/api/source/" + source.getId())
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -214,7 +216,7 @@ public class SourceControllerIntegrationTest {
         String uploadImageFileJson = new String(Files.readAllBytes(uploadImageFile.toPath()));
 
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_CONTRIBUTOR);
-        Source source = createSource("src name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER);
+        Source source = createSource("src name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER, new ArrayList<>());
 
         mvc.perform(post("/api/source/" + source.getId() + "/images")
                 .accept(APPLICATION_JSON_VALUE)
@@ -233,6 +235,38 @@ public class SourceControllerIntegrationTest {
                     .andExpect(jsonPath("images[0].fileName", is("test.jpg")));
     }
 
+    @Test
+    public void testDeleteImage() throws Exception {
+        String objectId1 = "objectId1";
+        String objectId2 = "objectId2";
+        String fileName = "image.jpg";
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
+        Image image1 = new Image();
+        image1.setObjectId(objectId1);
+        image1.setFileName(fileName);
+        Image image2 = new Image();
+        image2.setObjectId(objectId2);
+        image2.setFileName(fileName);
+        List<Image> images = Arrays.asList(image1, image2);
+        Source source = createSource("src name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER, images);
+
+        mvc.perform(delete("/api/source/" + source.getId() + "/images/" + objectId1)
+                .accept(APPLICATION_JSON_VALUE)
+                .contentType(APPLICATION_JSON_VALUE)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("name", is("src name")))
+                    .andExpect(jsonPath("description", is("desc")))
+                    .andExpect(jsonPath("classification", is("OTHER")))
+                    .andExpect(jsonPath("type", is("OTHER")))
+                    .andExpect(jsonPath("period", is("OTHER")))
+                    .andExpect(jsonPath("images", hasSize(1)))
+                    .andExpect(jsonPath("images[0].objectId", is(objectId2)))
+                    .andExpect(jsonPath("images[0].imageInfo", isEmptyOrNullString()))
+                    .andExpect(jsonPath("images[0].fileName", is(fileName)));
+    }
+
     private String buildUserInfoValue(Long id, Role role) throws Exception {
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setUserId(id);
@@ -243,13 +277,14 @@ public class SourceControllerIntegrationTest {
         return objectMapper.writeValueAsString(userInfoDto);
     }
 
-    private Source createSource(String name, String desc, Classification classification, Type type, Period period) {
+    private Source createSource(String name, String desc, Classification classification, Type type, Period period, List<Image> images) {
         Source source = new Source();
         source.setName(name);
         source.setDescription(desc);
         source.setClassification(classification);
         source.setType(type);
         source.setPeriod(period);
+        source.setImages(images);
         return sourceRepository.save(source);
     }
 

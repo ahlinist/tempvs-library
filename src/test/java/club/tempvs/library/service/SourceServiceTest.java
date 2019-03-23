@@ -3,6 +3,7 @@ package club.tempvs.library.service;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import static club.tempvs.library.domain.Source.*;
+import static java.util.Collections.emptyList;
 
 import club.tempvs.library.clients.ImageClient;
 import club.tempvs.library.domain.Image;
@@ -413,6 +414,17 @@ public class SourceServiceTest {
         assertEquals("ImageDto is returned", source, result);
     }
 
+    @Test(expected = NoSuchElementException.class)
+    public void testAddImageForMissingOne() {
+        Long id = 1L;
+        List<Role> roles = Arrays.asList(Role.ROLE_ARCHIVARIUS);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+
+        service.delete(id);
+    }
+
     @Test(expected = ForbiddenException.class)
     public void testAddImageForInsufficientRights() {
         Long id = 1L;
@@ -422,5 +434,56 @@ public class SourceServiceTest {
         when(user.getRoles()).thenReturn(roles);
 
         service.addImage(id, imageDto);
+    }
+
+    @Test(expected = ForbiddenException.class)
+    public void testDeleteImageForInsufficientRights() {
+        Long sourceId = 1L;
+        String objectId = "objectId";
+        List<Role> roles = Arrays.asList(Role.ROLE_CONTRIBUTOR);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+
+        service.deleteImage(sourceId, objectId);
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testDeleteImageForMissingSource() {
+        Long sourceId = 1L;
+        String objectId = "objectId";
+        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+
+        service.deleteImage(sourceId, objectId);
+    }
+
+    @Test
+    public void testDeleteImage() {
+        Long sourceId = 1L;
+        String objectId = "objectId";
+        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
+        List<Image> images = Arrays.asList(image);
+
+        when(userHolder.getUser()).thenReturn(user);
+        when(user.getRoles()).thenReturn(roles);
+        when(sourceRepository.findById(sourceId)).thenReturn(Optional.of(source));
+        when(source.getImages()).thenReturn(images);
+        when(image.getObjectId()).thenReturn(objectId);
+        when(sourceRepository.save(source)).thenReturn(source);
+
+        service.deleteImage(sourceId, objectId);
+
+        verify(userHolder).getUser();
+        verify(user).getRoles();
+        verify(sourceRepository).findById(sourceId);
+        verify(source).getImages();
+        verify(image).getObjectId();
+        verify(source).setImages(emptyList());
+        verify(imageClient).delete(objectId);
+        verify(sourceRepository).save(source);
+        verifyNoMoreInteractions(user, userHolder, sourceRepository, image, imageClient);
     }
 }

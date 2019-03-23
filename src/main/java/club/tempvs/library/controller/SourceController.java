@@ -64,8 +64,13 @@ public class SourceController {
         sourceService.delete(id);
     }
 
-    @PostMapping("/{id}/images")
-    public SourceDto addImage(@PathVariable Long id, @RequestBody ImageDto imageDto) {
-        return sourceService.addImage(id, imageDto).toSourceDto();
+    @PostMapping("/{sourceId}/images")
+    public SourceDto addImage(@PathVariable Long sourceId, @RequestBody ImageDto imageDto) {
+        return sourceService.addImage(sourceId, imageDto).toSourceDto();
+    }
+
+    @DeleteMapping("/{sourceId}/images/{objectId}")
+    public SourceDto deleteImage(@PathVariable Long sourceId, @PathVariable String objectId) {
+        return sourceService.deleteImage(sourceId, objectId).toSourceDto();
     }
 }

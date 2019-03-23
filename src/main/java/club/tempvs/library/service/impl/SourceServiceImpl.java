@@ -83,7 +83,7 @@ public class SourceServiceImpl implements SourceService {
     }
 
     public Source get(Long id) {
-        return getSource(id).get();
+        return getSource(id);
     }
 
     @Override
@@ -126,7 +126,7 @@ public class SourceServiceImpl implements SourceService {
         }
 
         validationHelper.processErrors(errorsDto);
-        Source source = getSource(id).get();
+        Source source = getSource(id);
         source.setName(name);
         return saveSource(source);
     }
@@ -141,7 +141,7 @@ public class SourceServiceImpl implements SourceService {
             throw new ForbiddenException("Access denied");
         }
 
-        Source source = getSource(id).get();
+        Source source = getSource(id);
         source.setDescription(description);
         return saveSource(source);
     }
@@ -156,7 +156,7 @@ public class SourceServiceImpl implements SourceService {
             throw new ForbiddenException("Access denied");
         }
 
-        Source source = getSource(id).orElseThrow(() -> new NoSuchElementException("Source with id " + id + " not found"));
+        Source source = getSource(id);
         List<String> objectIds = source.getImages()
                 .stream()
                 .map(Image::getObjectId)
@@ -175,11 +175,30 @@ public class SourceServiceImpl implements SourceService {
             throw new ForbiddenException("Access denied");
         }
 
-        Source source = getSource(sourceId)
-                .orElseThrow(() -> new NoSuchElementException("Source with id " + sourceId + "not found"));
+        Source source = getSource(sourceId);
         ImageDto result = imageClient.store(imageDto);
         source.getImages().add(result.toImage());
         return saveSource(source);
+    }
+
+    @Override
+    public Source deleteImage(Long sourceId, String objectId) {
+        User user = userHolder.getUser();
+        List<Role> userRoles = user.getRoles();
+        List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE);
+
+        if (Collections.disjoint(userRoles, allowedRoles)) {
+            throw new ForbiddenException("Access denied");
+        }
+
+        Source source = getSource(sourceId);
+        List<Image> images = source.getImages().stream()
+                .filter(image -> !image.getObjectId().equals(objectId))
+                .collect(toList());
+        source.setImages(images);
+        Source persistentSource = saveSource(source);
+        imageClient.delete(objectId);
+        return persistentSource;
     }
 
     @HystrixCommand(commandProperties = {
@@ -192,8 +211,8 @@ public class SourceServiceImpl implements SourceService {
     @HystrixCommand(commandProperties = {
             @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
     })
-    private Optional<Source> getSource(Long id) {
-        return sourceRepository.findById(id);
+    private Source getSource(Long id) {
+        return sourceRepository.findById(id).get();
     }
 
     @HystrixCommand(commandProperties = {
