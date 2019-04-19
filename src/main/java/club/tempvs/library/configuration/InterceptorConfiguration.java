@@ -2,19 +2,17 @@ package club.tempvs.library.configuration;
 
 import club.tempvs.library.interceptor.AuthInterceptor;
 import club.tempvs.library.interceptor.UserInfoInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Component
+@RequiredArgsConstructor
 public class InterceptorConfiguration implements WebMvcConfigurer {
 
-    @Autowired
-    AuthInterceptor authInterceptor;
-
-    @Autowired
-    UserInfoInterceptor userInfoInterceptor;
+    private final AuthInterceptor authInterceptor;
+    private final UserInfoInterceptor userInfoInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
