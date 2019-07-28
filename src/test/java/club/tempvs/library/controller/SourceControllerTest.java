@@ -142,15 +142,10 @@ public class SourceControllerTest {
     public void testAddImage() {
         Long id = 1L;
 
-        when(sourceService.addImage(id, imageDto)).thenReturn(source);
-        when(source.toSourceDto()).thenReturn(sourceDto);
-
-        SourceDto result = controller.addImage(id, imageDto);
+        controller.addImage(id, imageDto);
 
         verify(sourceService).addImage(id, imageDto);
-        verifyNoMoreInteractions(sourceService, imageDto);
-
-        assertEquals("ImageDto is returned back", sourceDto, result);
+        verifyNoMoreInteractions(sourceService);
     }
 
     @Test
@@ -158,14 +153,9 @@ public class SourceControllerTest {
         Long sourceId = 1L;
         String objectId = "objectId";
 
-        when(sourceService.deleteImage(sourceId, objectId)).thenReturn(source);
-        when(source.toSourceDto()).thenReturn(sourceDto);
-
-        SourceDto result = controller.deleteImage(sourceId, objectId);
+        controller.deleteImage(sourceId, objectId);
 
         verify(sourceService).deleteImage(sourceId, objectId);
-        verifyNoMoreInteractions(sourceService, imageDto);
-
-        assertEquals("ImageDto is returned back", sourceDto, result);
+        verifyNoMoreInteractions(sourceService);
     }
 }

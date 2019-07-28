@@ -5,12 +5,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static club.tempvs.library.domain.Source.Period;
 import static club.tempvs.library.domain.Source.Classification;
 import static club.tempvs.library.domain.Source.Type;
-import static java.util.stream.Collectors.toList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static club.tempvs.library.model.Role.*;
 
-import club.tempvs.library.clients.ImageClient;
-import club.tempvs.library.domain.Image;
 import club.tempvs.library.dto.ErrorsDto;
 import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.exception.ForbiddenException;
@@ -19,6 +16,7 @@ import club.tempvs.library.domain.Source;
 import club.tempvs.library.domain.User;
 import club.tempvs.library.holder.UserHolder;
 import club.tempvs.library.model.Role;
+import club.tempvs.library.service.ImageService;
 import club.tempvs.library.service.SourceService;
 import club.tempvs.library.util.ValidationHelper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
@@ -43,11 +41,12 @@ public class SourceServiceImpl implements SourceService {
     private static final String CLASSIFICATION_MISSING_ERROR = "source.classification.missing.error";
     private static final String PERIOD_MISSING_ERROR = "source.period.missing.error";
     private static final String TYPE_MISSING_ERROR = "source.type.missing.error";
+    private static final String SOURCE_ENTITY_IDENTIFIER = "source";
 
     private final SourceRepository sourceRepository;
     private final ValidationHelper validationHelper;
     private final UserHolder userHolder;
-    private final ImageClient imageClient;
+    private final ImageService imageService;
 
     @Override
     public Source create(Source source) {
@@ -156,17 +155,12 @@ public class SourceServiceImpl implements SourceService {
             throw new ForbiddenException("Access denied");
         }
 
-        Source source = getSource(id);
-        List<String> objectIds = source.getImages()
-                .stream()
-                .map(Image::getObjectId)
-                .collect(toList());
-        imageClient.delete(objectIds);
-        deleteSource(source);
+        deleteSource(id);
+        imageService.delete(SOURCE_ENTITY_IDENTIFIER, id);
     }
 
     @Override
-    public Source addImage(Long sourceId, ImageDto imageDto) {
+    public void addImage(Long sourceId, ImageDto imageDto) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
         List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE, ROLE_CONTRIBUTOR);
@@ -175,14 +169,13 @@ public class SourceServiceImpl implements SourceService {
             throw new ForbiddenException("Access denied");
         }
 
-        Source source = getSource(sourceId);
-        ImageDto result = imageClient.store(imageDto);
-        source.getImages().add(result.toImage());
-        return saveSource(source);
+        imageDto.setBelongsTo(SOURCE_ENTITY_IDENTIFIER);
+        imageDto.setEntityId(sourceId);
+        imageService.store(imageDto);
     }
 
     @Override
-    public Source deleteImage(Long sourceId, String objectId) {
+    public void deleteImage(Long sourceId, String objectId) {
         User user = userHolder.getUser();
         List<Role> userRoles = user.getRoles();
         List<Role> allowedRoles = Arrays.asList(ROLE_ADMIN, ROLE_ARCHIVARIUS, ROLE_SCRIBE);
@@ -191,14 +184,7 @@ public class SourceServiceImpl implements SourceService {
             throw new ForbiddenException("Access denied");
         }
 
-        Source source = getSource(sourceId);
-        List<Image> images = source.getImages().stream()
-                .filter(image -> !image.getObjectId().equals(objectId))
-                .collect(toList());
-        source.setImages(images);
-        Source persistentSource = saveSource(source);
-        imageClient.delete(objectId);
-        return persistentSource;
+        imageService.delete(Arrays.asList(objectId));
     }
 
     @HystrixCommand(commandProperties = {
@@ -226,7 +212,7 @@ public class SourceServiceImpl implements SourceService {
     @HystrixCommand(commandProperties = {
             @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
     })
-    private void deleteSource(Source source) {
-        sourceRepository.delete(source);
+    private void deleteSource(Long id) {
+        sourceRepository.deleteById(id);
     }
 }

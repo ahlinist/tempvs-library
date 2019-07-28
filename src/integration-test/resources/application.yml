@@ -10,7 +10,3 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
 authorization:
   token: security_token
-amqp:
-  enabled: false
-  url: amqp://login:pass@host/login
-  timeout: 30000

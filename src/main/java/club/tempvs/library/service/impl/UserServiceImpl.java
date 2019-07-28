@@ -1,6 +1,5 @@
 package club.tempvs.library.service.impl;
 
-import club.tempvs.library.amqp.UserRoleChannel;
 import club.tempvs.library.dao.UserRepository;
 import club.tempvs.library.domain.User;
 import club.tempvs.library.dto.UserDto;
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserRoleChannel userRoleChannel;
+    //private final UserRoleChannel userRoleChannel;
 
     @Override
     @HystrixCommand(commandProperties = {
@@ -38,6 +37,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUserRoles(UserRolesDto userRolesDto) {
-        userRoleChannel.updateRoles(userRolesDto);
+        //TODO: implement with rabbitMQ
+        //userRoleChannel.updateRoles(userRolesDto);
     }
 }

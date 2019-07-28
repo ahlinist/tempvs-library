@@ -19,6 +19,19 @@ spring:
   jackson:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
+  cloud:
+    stream:
+      binders:
+        heroku_rabbit:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: ${AMQP_HOST}
+                port: 5672
+                username: ${AMQP_USER}
+                password: ${AMQP_PASSWORD}
+                virtual-host: ${AMQP_USER}
 logging:
   level:
     org:
@@ -47,10 +60,6 @@ ribbon:
 security:
   user:
     password: ${eureka.password}
-amqp:
-  enabled: true
-  url: ${CLOUDAMQP_URL}
-  timeout: 30000
 ---
 spring:
   profiles: local

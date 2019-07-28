@@ -8,10 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -31,10 +28,6 @@ public class Source {
     private Type type;
     @NotNull
     private Period period;
-    @Size(max = 10)
-    @OrderColumn
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Image> images = new ArrayList<>();
     @CreatedDate
     private Instant createdDate;
 
@@ -79,7 +72,6 @@ public class Source {
         sourceDto.setClassification(this.classification);
         sourceDto.setType(this.type);
         sourceDto.setPeriod(this.period);
-        sourceDto.setImages(this.images);
         return sourceDto;
     }
 }

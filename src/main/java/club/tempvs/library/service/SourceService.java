@@ -21,7 +21,7 @@ public interface SourceService {
 
     void delete(Long id);
 
-    Source addImage(Long sourceId, ImageDto imageDto);
+    void addImage(Long sourceId, ImageDto imageDto);
 
-    Source deleteImage(Long sourceId, String objectId);
+    void deleteImage(Long sourceId, String objectId);
 }

@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.1.4.RELEASE'
+		springBootVersion = '2.1.6.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -51,7 +51,7 @@ repositories {
 }
 
 ext {
-	set('springCloudVersion', 'Greenwich.SR1')
+	set('springCloudVersion', 'Greenwich.SR2')
 }
 
 dependencies {
@@ -59,25 +59,25 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-	implementation "org.liquibase:liquibase-core:${liquibaseVersion}" //to fire changelog migration on startup
+	implementation 'org.springframework.cloud:spring-cloud-starter-stream-rabbit'
+	implementation 'org.springframework.cloud:spring-cloud-stream-binder-rabbit'
 	//database
 	implementation "org.postgresql:postgresql:${postgresVersion}"
+	implementation "org.liquibase:liquibase-core:${liquibaseVersion}" //to fire changelog migration on startup
 	//lombok
 	compileOnly 'org.projectlombok:lombok:1.18.4'
 	apt 'org.projectlombok:lombok:1.18.4'
-	//testing
-	testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
-	testImplementation 'org.mockito:mockito-core:2.18.3'
-	testRuntime 'com.h2database:h2:1.4.194'
+
 	//liquibase
 	liquibaseRuntime "org.liquibase:liquibase-core:${liquibaseVersion}"
 	liquibaseRuntime "org.postgresql:postgresql:${postgresVersion}"
 	liquibaseRuntime 'org.liquibase.ext:liquibase-hibernate5:3.6'
 	liquibaseRuntime 'org.springframework.boot:spring-boot-starter-data-jpa'
 	liquibaseRuntime sourceSets.main.output
-	//amqp
-	implementation 'com.rabbitmq:amqp-client:3.3.4'
+	//testing
+	testImplementation 'org.mockito:mockito-core:2.18.3'
+	testRuntime 'com.h2database:h2:1.4.194'
+	testImplementation  'org.springframework.cloud:spring-cloud-stream-test-support'
 }
 
 dependencyManagement {

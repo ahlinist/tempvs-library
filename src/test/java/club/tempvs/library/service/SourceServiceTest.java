@@ -3,10 +3,7 @@ package club.tempvs.library.service;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import static club.tempvs.library.domain.Source.*;
-import static java.util.Collections.emptyList;
 
-import club.tempvs.library.clients.ImageClient;
-import club.tempvs.library.domain.Image;
 import club.tempvs.library.dto.ErrorsDto;
 import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.exception.ForbiddenException;
@@ -17,9 +14,9 @@ import club.tempvs.library.holder.UserHolder;
 import club.tempvs.library.model.Role;
 import club.tempvs.library.service.impl.SourceServiceImpl;
 import club.tempvs.library.util.ValidationHelper;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +28,8 @@ import java.util.*;
 @RunWith(MockitoJUnitRunner.class)
 public class SourceServiceTest {
 
-    private SourceService service;
+    @InjectMocks
+    private SourceServiceImpl service;
 
     @Mock
     private User user;
@@ -42,20 +40,13 @@ public class SourceServiceTest {
     @Mock
     private ImageDto imageDto;
     @Mock
-    private Image image;
-    @Mock
     private SourceRepository sourceRepository;
     @Mock
     private ValidationHelper validationHelper;
     @Mock
     private UserHolder userHolder;
     @Mock
-    private ImageClient imageClient;
-
-    @Before
-    public void setUp() {
-        service = new SourceServiceImpl(sourceRepository, validationHelper, userHolder, imageClient);
-    }
+    private ImageService imageService;
 
     @Test
     public void testCreate() {
@@ -66,7 +57,6 @@ public class SourceServiceTest {
         source.setClassification(Classification.ARMOR);
         source.setType(Type.ARCHAEOLOGICAL);
         source.setPeriod(Period.ANTIQUITY);
-        source.setImages(Collections.emptyList());
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
@@ -343,7 +333,7 @@ public class SourceServiceTest {
     @Test(expected = ForbiddenException.class)
     public void testDeleteSourceForInsufficientAuthorities() {
         Long id = 1L;
-        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
+        List<Role> roles = Collections.singletonList(Role.ROLE_SCRIBE);
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
@@ -355,37 +345,17 @@ public class SourceServiceTest {
     public void testDeleteSource() {
         Long id = 1L;
         List<Role> roles = Arrays.asList(Role.ROLE_ARCHIVARIUS);
-        List<Image> images = Arrays.asList(image, image);
-        String objectId = "testObjectId";
-        List<String> objectIds = Arrays.asList(objectId, objectId);
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
-        when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
-        when(source.getImages()).thenReturn(images);
-        when(image.getObjectId()).thenReturn(objectId);
 
         service.delete(id);
 
         verify(userHolder).getUser();
         verify(user).getRoles();
-        verify(sourceRepository).findById(id);
-        verify(source).getImages();
-        verify(image, times(2)).getObjectId();
-        verify(imageClient).delete(objectIds);
-        verify(sourceRepository).delete(source);
-        verifyNoMoreInteractions(sourceRepository, userHolder, user, imageClient);
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testDeleteSourceForMissingOne() {
-        Long id = 1L;
-        List<Role> roles = Arrays.asList(Role.ROLE_ARCHIVARIUS);
-
-        when(userHolder.getUser()).thenReturn(user);
-        when(user.getRoles()).thenReturn(roles);
-
-        service.delete(id);
+        verify(imageService).delete("source", id);
+        verify(sourceRepository).deleteById(id);
+        verifyNoMoreInteractions(sourceRepository, userHolder, user, imageService);
     }
 
     @Test
@@ -395,34 +365,15 @@ public class SourceServiceTest {
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
-        when(sourceRepository.findById(id)).thenReturn(Optional.of(source));
-        when(imageClient.store(imageDto)).thenReturn(imageDto);
-        when(imageDto.toImage()).thenReturn(image);
-        when(sourceRepository.save(source)).thenReturn(source);
 
-        Source result = service.addImage(id, imageDto);
+        service.addImage(id, imageDto);
 
         verify(userHolder).getUser();
         verify(user).getRoles();
-        verify(sourceRepository).findById(id);
-        verify(imageClient).store(imageDto);
-        verify(source).getImages();
-        verify(imageDto).toImage();
-        verify(sourceRepository).save(source);
+        verify(imageDto).setBelongsTo("source");
+        verify(imageDto).setEntityId(id);
+        verify(imageService).store(imageDto);
         verifyNoMoreInteractions(sourceRepository, userHolder, user, imageDto, source);
-
-        assertEquals("ImageDto is returned", source, result);
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testAddImageForMissingOne() {
-        Long id = 1L;
-        List<Role> roles = Arrays.asList(Role.ROLE_ARCHIVARIUS);
-
-        when(userHolder.getUser()).thenReturn(user);
-        when(user.getRoles()).thenReturn(roles);
-
-        service.delete(id);
     }
 
     @Test(expected = ForbiddenException.class)
@@ -448,42 +399,21 @@ public class SourceServiceTest {
         service.deleteImage(sourceId, objectId);
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void testDeleteImageForMissingSource() {
-        Long sourceId = 1L;
-        String objectId = "objectId";
-        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
-
-        when(userHolder.getUser()).thenReturn(user);
-        when(user.getRoles()).thenReturn(roles);
-
-        service.deleteImage(sourceId, objectId);
-    }
-
     @Test
     public void testDeleteImage() {
         Long sourceId = 1L;
         String objectId = "objectId";
-        List<Role> roles = Arrays.asList(Role.ROLE_SCRIBE);
-        List<Image> images = Arrays.asList(image);
+        List<String> objectIds = Collections.singletonList(objectId);
+        List<Role> roles = Collections.singletonList(Role.ROLE_SCRIBE);
 
         when(userHolder.getUser()).thenReturn(user);
         when(user.getRoles()).thenReturn(roles);
-        when(sourceRepository.findById(sourceId)).thenReturn(Optional.of(source));
-        when(source.getImages()).thenReturn(images);
-        when(image.getObjectId()).thenReturn(objectId);
-        when(sourceRepository.save(source)).thenReturn(source);
 
         service.deleteImage(sourceId, objectId);
 
         verify(userHolder).getUser();
         verify(user).getRoles();
-        verify(sourceRepository).findById(sourceId);
-        verify(source).getImages();
-        verify(image).getObjectId();
-        verify(source).setImages(emptyList());
-        verify(imageClient).delete(objectId);
-        verify(sourceRepository).save(source);
-        verifyNoMoreInteractions(user, userHolder, sourceRepository, image, imageClient);
+        verify(imageService).delete(objectIds);
+        verifyNoMoreInteractions(user, userHolder, sourceRepository, imageService);
     }
 }
