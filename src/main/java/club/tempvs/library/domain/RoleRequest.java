@@ -16,12 +16,13 @@ import java.time.Instant;
 public class RoleRequest {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
     private User user;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     @CreatedDate

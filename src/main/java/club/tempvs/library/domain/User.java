@@ -23,32 +23,19 @@ public class User {
 
     @Id
     private Long id;
-
-    private transient Long profileId;
-
     @NotNull
     private Long userProfileId;
-
     @NotBlank
     private String userName;
-
-    private transient String timezone;
-
     private transient Locale locale;
-
-    @ElementCollection
-    private List<Role> roles;
+    private transient List<Role> roles;
 
     public User(UserInfoDto userInfoDto) {
-        List<String> stringRoles = Role.getStringValues();
-
         this.id = userInfoDto.getUserId();
-        this.profileId = userInfoDto.getProfileId();
         this.userName = userInfoDto.getUserName();
-        this.timezone = userInfoDto.getTimezone();
         this.locale = new Locale(userInfoDto.getLang());
         this.roles = userInfoDto.getRoles().stream()
-                .filter(stringRoles::contains)
+                .filter(Role.getStringValues()::contains)
                 .map(Role::valueOf)
                 .collect(toList());
     }

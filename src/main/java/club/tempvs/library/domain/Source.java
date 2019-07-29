@@ -17,16 +17,19 @@ import java.time.Instant;
 public class Source {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     @NotBlank
     private String name;
     private String description;
     @NotNull
+    @Enumerated(EnumType.STRING)
     private Classification classification;
     @NotNull
+    @Enumerated(EnumType.STRING)
     private Type type;
     @NotNull
+    @Enumerated(EnumType.STRING)
     private Period period;
     @CreatedDate
     private Instant createdDate;
