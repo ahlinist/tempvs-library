@@ -18,13 +18,10 @@ public class RoleRequest {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
-
     @OneToOne
     private User user;
-
     @Enumerated(EnumType.STRING)
     private Role role;
-
     @CreatedDate
     private Instant createdDate;
 
