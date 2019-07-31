@@ -21,7 +21,7 @@ public class FindSourceDtoConverter implements Converter<String, FindSourceDto> 
             String decodedString = new String(decodedBytes);
             return objectMapper.readValue(decodedString, FindSourceDto.class);
         } catch (Exception e) {
-            return null;
+            throw new IllegalArgumentException(e);
         }
     }
 }

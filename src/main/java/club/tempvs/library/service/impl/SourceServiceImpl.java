@@ -91,10 +91,6 @@ public class SourceServiceImpl implements SourceService {
             query = "";
         }
 
-        if (period == null) {
-            throw new IllegalStateException("Period is not defined");
-        }
-
         if (isEmpty(classifications)) {
             classifications = Arrays.asList(Classification.values());
         }
