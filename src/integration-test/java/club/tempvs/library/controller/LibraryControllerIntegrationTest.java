@@ -229,9 +229,7 @@ public class LibraryControllerIntegrationTest {
     private String buildUserInfoValue(Long id, Role role) throws Exception {
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setUserId(id);
-        userInfoDto.setProfileId(id);
         userInfoDto.setLang("en");
-        userInfoDto.setTimezone("UTC");
 
         if (role != null) {
             userInfoDto.setRoles(Arrays.asList(role.toString()));

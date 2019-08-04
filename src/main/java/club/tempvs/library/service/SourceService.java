@@ -13,6 +13,8 @@ public interface SourceService {
 
     Source get(Long id);
 
+    List<Source> getAll(List<Long> ids);
+
     List<Source> find(String query, Period period, List<Classification> classifications, List<Type> types, int page, int size);
 
     Source updateName(Long id, String name);

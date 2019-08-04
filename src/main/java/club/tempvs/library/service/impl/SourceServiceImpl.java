@@ -81,12 +81,22 @@ public class SourceServiceImpl implements SourceService {
         return saveSource(source);
     }
 
+    @Override
     public Source get(Long id) {
         return getSource(id);
     }
 
     @Override
+    public List<Source> getAll(List<Long> ids) {
+        return getSources(ids);
+    }
+
+    @Override
     public List<Source> find(String query, Period period, List<Classification> classifications, List<Type> types, int page, int size) {
+        if (period == null) {
+            throw new IllegalStateException("Period is not defined");
+        }
+
         if (isBlank(query)) {
             query = "";
         }
@@ -195,6 +205,13 @@ public class SourceServiceImpl implements SourceService {
     })
     private Source getSource(Long id) {
         return sourceRepository.findById(id).get();
+    }
+
+    @HystrixCommand(commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "SEMAPHORE")
+    })
+    private List<Source> getSources(List<Long> ids) {
+        return sourceRepository.findAllById(ids);
     }
 
     @HystrixCommand(commandProperties = {

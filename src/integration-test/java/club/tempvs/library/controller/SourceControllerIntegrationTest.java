@@ -26,6 +26,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -113,6 +114,36 @@ public class SourceControllerIntegrationTest {
     }
 
     @Test
+    public void testGetSources() throws Exception {
+        String userInfoValue = buildUserInfoValue(1L, Role.ROLE_USER);
+        Source source1 = createSource(
+                "name11", "1desc", Classification.ARMOR, Type.GRAPHIC, Period.EARLY_MIDDLE_AGES);
+        Source source2 = createSource(
+                "name15", "5desc", Classification.HOUSEHOLD, Type.WRITTEN, Period.EARLY_MIDDLE_AGES);
+
+        List<String> ids = Arrays.asList(source1.getId().toString(), source2.getId().toString());
+        String stringifiedIds = String.join(", ", ids);
+        String query = String.format("{\"ids\": [%s]}", stringifiedIds);
+        String encodedQuery = Base64.getEncoder().encodeToString(query.getBytes());
+
+        mvc.perform(get("/api/source?q=" + encodedQuery)
+                .header(USER_INFO_HEADER, userInfoValue)
+                .header(AUTHORIZATION_HEADER, TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].name", is("name11")))
+                .andExpect(jsonPath("$[0].description", is("1desc")))
+                .andExpect(jsonPath("$[0].classification", is("ARMOR")))
+                .andExpect(jsonPath("$[0].type", is("GRAPHIC")))
+                .andExpect(jsonPath("$[0].period", is("EARLY_MIDDLE_AGES")))
+                .andExpect(jsonPath("$[1].name", is("name15")))
+                .andExpect(jsonPath("$[1].description", is("5desc")))
+                .andExpect(jsonPath("$[1].classification", is("HOUSEHOLD")))
+                .andExpect(jsonPath("$[1].type", is("WRITTEN")))
+                .andExpect(jsonPath("$[1].period", is("EARLY_MIDDLE_AGES")));
+    }
+
+    @Test
     public void testFindSources() throws Exception {
         File findSourceFile = ResourceUtils.getFile("classpath:source/find.json");
         String findSourceJson = new String(Files.readAllBytes(findSourceFile.toPath()));
@@ -126,7 +157,7 @@ public class SourceControllerIntegrationTest {
         createSource("name32", "desc4", Classification.HOUSEHOLD, Type.GRAPHIC, Period.WWII);
         createSource("name15", "5desc", Classification.HOUSEHOLD, Type.WRITTEN, Period.EARLY_MIDDLE_AGES);
 
-        mvc.perform(get("/api/source?&page=0&size=40&q=" + encodedQuery)
+        mvc.perform(get("/api/source/find?&page=0&size=40&q=" + encodedQuery)
                 .header(USER_INFO_HEADER, userInfoValue)
                 .header(AUTHORIZATION_HEADER, TOKEN))
                     .andExpect(status().isOk())
@@ -240,9 +271,7 @@ public class SourceControllerIntegrationTest {
     private String buildUserInfoValue(Long id, Role role) throws Exception {
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setUserId(id);
-        userInfoDto.setProfileId(id);
         userInfoDto.setLang("en");
-        userInfoDto.setTimezone("UTC");
         userInfoDto.setRoles(Arrays.asList(role.toString()));
         return objectMapper.writeValueAsString(userInfoDto);
     }

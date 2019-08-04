@@ -106,7 +106,7 @@ public class SourceServiceTest {
         Source result = service.get(id);
 
         verify(sourceRepository).findById(id);
-        verifyNoMoreInteractions(sourceRepository, source);
+        verifyNoMoreInteractions(sourceRepository);
 
         assertEquals("Source object is returned", source, result);
     }
@@ -118,6 +118,21 @@ public class SourceServiceTest {
         when(sourceRepository.findById(id)).thenReturn(Optional.empty());
 
         service.get(id);
+    }
+
+    @Test
+    public void testGetAll() {
+        List<Long> ids = Arrays.asList(1L);
+        List<Source> sources = Arrays.asList(source);
+
+        when(sourceRepository.findAllById(ids)).thenReturn(sources);
+
+        List<Source> result = service.getAll(ids);
+
+        verify(sourceRepository).findAllById(ids);
+        verifyNoMoreInteractions(sourceRepository);
+
+        assertEquals("A list of sources is returned", sources, result);
     }
 
     @Test

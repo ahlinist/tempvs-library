@@ -6,6 +6,7 @@ import static club.tempvs.library.domain.Source.*;
 
 import club.tempvs.library.domain.Source;
 import club.tempvs.library.dto.FindSourceDto;
+import club.tempvs.library.dto.GetSourcesDto;
 import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.service.SourceService;
@@ -34,6 +35,9 @@ public class SourceControllerTest {
     @Mock
     private FindSourceDto findSourceDto;
     @Mock
+    private GetSourcesDto getSourcesDto;
+
+    @Mock
     private SourceService sourceService;
 
     @Before
@@ -45,13 +49,14 @@ public class SourceControllerTest {
     public void testCreate() {
         when(sourceService.create(source)).thenReturn(source);
         when(sourceDto.toSource()).thenReturn(source);
+        when(source.toSourceDto()).thenReturn(sourceDto);
 
-        Source result = controller.create(sourceDto);
+        SourceDto result = controller.create(sourceDto);
 
         verify(sourceService).create(source);
         verifyNoMoreInteractions(sourceService);
 
-        assertEquals("SourceDto is returned", source, result);
+        assertEquals("SourceDto is returned", sourceDto, result);
     }
 
     @Test
@@ -59,13 +64,32 @@ public class SourceControllerTest {
         Long id = 1L;
 
         when(sourceService.get(id)).thenReturn(source);
+        when(source.toSourceDto()).thenReturn(sourceDto);
 
-        Source result = controller.get(id);
+        SourceDto result = controller.get(id);
 
         verify(sourceService).get(id);
         verifyNoMoreInteractions(sourceService);
 
-        assertEquals("SourceDto is returned", source, result);
+        assertEquals("SourceDto is returned", sourceDto, result);
+    }
+
+    @Test
+    public void testGetAll() {
+        List<Long> ids = Arrays.asList(1L);
+        List<Source> sources = Arrays.asList(source);
+        List<SourceDto> sourceDtos = Arrays.asList(sourceDto);
+
+        when(getSourcesDto.getIds()).thenReturn(ids);
+        when(sourceService.getAll(ids)).thenReturn(sources);
+        when(source.toSourceDto()).thenReturn(sourceDto);
+
+        List<SourceDto> result = controller.getAll(getSourcesDto);
+
+        verify(sourceService).getAll(ids);
+        verifyNoMoreInteractions(sourceService);
+
+        assertEquals("SourceDto is returned", sourceDtos, result);
     }
 
     @Test

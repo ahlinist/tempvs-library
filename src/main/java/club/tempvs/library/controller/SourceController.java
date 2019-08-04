@@ -2,6 +2,7 @@ package club.tempvs.library.controller;
 
 import club.tempvs.library.domain.Source;
 import club.tempvs.library.dto.FindSourceDto;
+import club.tempvs.library.dto.GetSourcesDto;
 import club.tempvs.library.dto.ImageDto;
 import club.tempvs.library.dto.SourceDto;
 import club.tempvs.library.service.SourceService;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import java.util.List;
 import java.util.Map;
@@ -26,16 +28,28 @@ public class SourceController {
     private final SourceService sourceService;
 
     @PostMapping
-    public Source create(@RequestBody SourceDto sourceDto) {
-        return sourceService.create(sourceDto.toSource());
+    public SourceDto create(@RequestBody SourceDto sourceDto) {
+        Source source = sourceDto.toSource();
+        return sourceService.create(source)
+                .toSourceDto();
     }
 
     @GetMapping("/{id}")
-    public Source get(@PathVariable Long id) {
-        return sourceService.get(id);
+    public SourceDto get(@PathVariable Long id) {
+        return sourceService.get(id)
+                .toSourceDto();
     }
 
     @GetMapping
+    public List<SourceDto> getAll(@RequestParam @Valid GetSourcesDto q) {
+        List<Long> ids = q.getIds();
+        return sourceService.getAll(ids)
+                .stream()
+                .map(Source::toSourceDto)
+                .collect(toList());
+    }
+
+    @GetMapping("/find")
     public List<SourceDto> find(
             @RequestParam FindSourceDto q,
             @RequestParam int page,
