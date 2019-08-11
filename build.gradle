@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.1.6.RELEASE'
+		springBootVersion = '2.1.7.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -39,7 +39,7 @@ generateChangelog.dependsOn compileJava
 
 group = 'club.tempvs'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+sourceCompatibility = '11'
 
 configurations {
 	integrationTestImplementation.extendsFrom testImplementation
@@ -65,9 +65,8 @@ dependencies {
 	implementation "org.postgresql:postgresql:${postgresVersion}"
 	implementation "org.liquibase:liquibase-core:${liquibaseVersion}" //to fire changelog migration on startup
 	//lombok
-	compileOnly 'org.projectlombok:lombok:1.18.4'
-	apt 'org.projectlombok:lombok:1.18.4'
-
+	annotationProcessor 'org.projectlombok:lombok'
+	compileOnly 'org.projectlombok:lombok'
 	//liquibase
 	liquibaseRuntime "org.liquibase:liquibase-core:${liquibaseVersion}"
 	liquibaseRuntime "org.postgresql:postgresql:${postgresVersion}"
@@ -75,7 +74,6 @@ dependencies {
 	liquibaseRuntime 'org.springframework.boot:spring-boot-starter-data-jpa'
 	liquibaseRuntime sourceSets.main.output
 	//testing
-	testImplementation 'org.mockito:mockito-core:2.18.3'
 	testRuntime 'com.h2database:h2:1.4.194'
 	testImplementation  'org.springframework.cloud:spring-cloud-stream-test-support'
 }
@@ -87,8 +85,8 @@ dependencyManagement {
 }
 
 bootJar {
-	baseName = 'tempvs-library'
-	version =  project.version
+	archiveBaseName = 'tempvs-library'
+	archiveVersion = ''
 }
 
 sourceSets {
@@ -106,8 +104,4 @@ sourceSets {
 task integrationTest(type: Test) {
 	testClassesDirs = sourceSets.integrationTest.output.classesDirs
 	classpath = sourceSets.integrationTest.runtimeClasspath
-}
-
-task stage() {
-	dependsOn build
 }
