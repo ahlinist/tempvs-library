@@ -56,7 +56,7 @@ public class LibraryControllerIntegrationTest {
         Long id = 1L;
         String userInfoValue = buildUserInfoValue(id);
 
-        mvc.perform(get("/api/library")
+        mvc.perform(get("/library")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -75,7 +75,7 @@ public class LibraryControllerIntegrationTest {
         String userInfoValue = buildUserInfoValue(id);
         String role = Role.ROLE_CONTRIBUTOR.toString();
 
-        mvc.perform(post("/api/library/role/" + role)
+        mvc.perform(post("/library/role/" + role)
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -94,7 +94,7 @@ public class LibraryControllerIntegrationTest {
         String userInfoValue = buildUserInfoValue(id, Role.ROLE_CONTRIBUTOR);
         String role = Role.ROLE_SCRIBE.toString();
 
-        mvc.perform(delete("/api/library/role/" + role)
+        mvc.perform(delete("/library/role/" + role)
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -121,7 +121,7 @@ public class LibraryControllerIntegrationTest {
         createRoleRequest(user, Role.ROLE_CONTRIBUTOR);
         createRoleRequest(user, Role.ROLE_SCRIBE);
 
-        mvc.perform(get("/api/library/admin?page=0&size=40")
+        mvc.perform(get("/library/admin?page=0&size=40")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -145,7 +145,7 @@ public class LibraryControllerIntegrationTest {
         Long id = 1L;
         String userInfoValue = buildUserInfoValue(id);
 
-        mvc.perform(get("/api/library/admin?page=0&size=40")
+        mvc.perform(get("/library/admin?page=0&size=40")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -158,7 +158,7 @@ public class LibraryControllerIntegrationTest {
         Long id = 1L;
         String userInfoValue = buildUserInfoValue(id, Role.ROLE_ARCHIVARIUS);
 
-        mvc.perform(get("/api/library/admin?page=0&size=41")
+        mvc.perform(get("/library/admin?page=0&size=41")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -180,7 +180,7 @@ public class LibraryControllerIntegrationTest {
         createRoleRequest(user, Role.ROLE_CONTRIBUTOR);
         createRoleRequest(user, Role.ROLE_SCRIBE);
 
-        mvc.perform(delete("/api/library/" + Role.ROLE_SCRIBE.toString() + "/" + userId.intValue())
+        mvc.perform(delete("/library/" + Role.ROLE_SCRIBE.toString() + "/" + userId.intValue())
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
@@ -208,7 +208,7 @@ public class LibraryControllerIntegrationTest {
         createRoleRequest(user, Role.ROLE_CONTRIBUTOR);
         createRoleRequest(user, Role.ROLE_SCRIBE);
 
-        mvc.perform(post("/api/library/" + Role.ROLE_SCRIBE.toString() + "/" + userId.intValue())
+        mvc.perform(post("/library/" + Role.ROLE_SCRIBE.toString() + "/" + userId.intValue())
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
