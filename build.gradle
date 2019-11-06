@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.1.7.RELEASE'
+		springBootVersion = '2.2.0.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -44,14 +44,19 @@ sourceCompatibility = '11'
 configurations {
 	integrationTestImplementation.extendsFrom testImplementation
 	integrationTestRuntime.extendsFrom testRuntime
+
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
 }
 
 repositories {
 	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
 }
 
 ext {
-	set('springCloudVersion', 'Greenwich.SR2')
+	set('springCloudVersion', 'Hoxton.RC1')
 }
 
 dependencies {
@@ -75,7 +80,7 @@ dependencies {
 	liquibaseRuntime sourceSets.main.output
 	//testing
 	testRuntime 'com.h2database:h2:1.4.194'
-	testImplementation  'org.springframework.cloud:spring-cloud-stream-test-support'
+	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-support'
 }
 
 dependencyManagement {
