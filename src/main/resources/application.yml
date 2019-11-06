@@ -39,7 +39,7 @@ logging:
       springframework:
         web: WARN
 authorization:
-  token: ${TOKEN}
+  token: ${TOKEN:security_token}
 eureka:
   client:
     serviceUrl:

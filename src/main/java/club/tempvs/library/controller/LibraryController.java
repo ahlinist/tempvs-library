@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.Max;
 
 @RestController
-@RequestMapping("/api/library")
+@RequestMapping("/library")
 @RequiredArgsConstructor
 @Validated
 public class LibraryController {
