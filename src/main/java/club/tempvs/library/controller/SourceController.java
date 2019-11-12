@@ -18,7 +18,7 @@ import java.util.Map;
 import static java.util.stream.Collectors.toList;
 
 @RestController
-@RequestMapping("/source")
+@RequestMapping("/api/library/source")
 @RequiredArgsConstructor
 @Validated
 public class SourceController {
