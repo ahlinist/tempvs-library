@@ -58,7 +58,7 @@ public class SourceControllerIntegrationTest {
         String createSourceJson = new String(Files.readAllBytes(createSourceFile.toPath()));
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_CONTRIBUTOR);
 
-        mvc.perform(post("/api/library/source")
+        mvc.perform(post("/source")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .content(createSourceJson)
@@ -78,7 +78,7 @@ public class SourceControllerIntegrationTest {
         String createSourceJson = new String(Files.readAllBytes(createSourceFile.toPath()));
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_CONTRIBUTOR);
 
-        mvc.perform(post("/api/library/source")
+        mvc.perform(post("/source")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .content(createSourceJson)
@@ -102,7 +102,7 @@ public class SourceControllerIntegrationTest {
         Source source = createSource(name, description, classification, type, period);
         Long sourceId = source.getId();
 
-        mvc.perform(get("/api/library/source/" + sourceId)
+        mvc.perform(get("/source/" + sourceId)
                 .header(USER_INFO_HEADER, userInfoValue)
                 .header(AUTHORIZATION_HEADER, TOKEN))
                     .andExpect(status().isOk())
@@ -126,7 +126,7 @@ public class SourceControllerIntegrationTest {
         String query = String.format("{\"ids\": [%s]}", stringifiedIds);
         String encodedQuery = Base64.getEncoder().encodeToString(query.getBytes());
 
-        mvc.perform(get("/api/library/source?q=" + encodedQuery)
+        mvc.perform(get("/source?q=" + encodedQuery)
                 .header(USER_INFO_HEADER, userInfoValue)
                 .header(AUTHORIZATION_HEADER, TOKEN))
                 .andExpect(status().isOk())
@@ -157,7 +157,7 @@ public class SourceControllerIntegrationTest {
         createSource("name32", "desc4", Classification.HOUSEHOLD, Type.GRAPHIC, Period.WWII);
         createSource("name15", "5desc", Classification.HOUSEHOLD, Type.WRITTEN, Period.EARLY_MIDDLE_AGES);
 
-        mvc.perform(get("/api/library/source/find?&page=0&size=40&q=" + encodedQuery)
+        mvc.perform(get("/source/find?&page=0&size=40&q=" + encodedQuery)
                 .header(USER_INFO_HEADER, userInfoValue)
                 .header(AUTHORIZATION_HEADER, TOKEN))
                     .andExpect(status().isOk())
@@ -187,7 +187,7 @@ public class SourceControllerIntegrationTest {
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
         Source source = createSource("old name", "desc", Classification.WEAPON, Type.ARCHAEOLOGICAL, Period.EARLY_MIDDLE_AGES);
 
-        mvc.perform(patch("/api/library/source/" + source.getId() + "/name")
+        mvc.perform(patch("/source/" + source.getId() + "/name")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .content(updateSourceNameJson)
@@ -204,7 +204,7 @@ public class SourceControllerIntegrationTest {
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
         Source source = createSource("name", "old desc", Classification.WEAPON, Type.GRAPHIC, Period.WWI);
 
-        mvc.perform(patch("/api/library/source/" + source.getId() + "/description")
+        mvc.perform(patch("/source/" + source.getId() + "/description")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .content(updateSourceDescJson)
@@ -218,7 +218,7 @@ public class SourceControllerIntegrationTest {
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_ARCHIVARIUS);
         Source source = createSource("name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER);
 
-        mvc.perform(delete("/api/library/source/" + source.getId())
+        mvc.perform(delete("/source/" + source.getId())
                 .header(USER_INFO_HEADER, userInfoValue)
                 .header(AUTHORIZATION_HEADER, TOKEN))
                     .andExpect(status().isOk());
@@ -229,7 +229,7 @@ public class SourceControllerIntegrationTest {
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
         Source source = createSource("name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER);
 
-        mvc.perform(delete("/api/library/source/" + source.getId())
+        mvc.perform(delete("/source/" + source.getId())
                 .header(USER_INFO_HEADER, userInfoValue)
                 .header(AUTHORIZATION_HEADER, TOKEN))
                     .andExpect(status().isForbidden());
@@ -243,7 +243,7 @@ public class SourceControllerIntegrationTest {
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_CONTRIBUTOR);
         Source source = createSource("src name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER);
 
-        mvc.perform(post("/api/library/source/" + source.getId() + "/images")
+        mvc.perform(post("/source/" + source.getId() + "/images")
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .content(uploadImageFileJson)
@@ -260,7 +260,7 @@ public class SourceControllerIntegrationTest {
         String userInfoValue = buildUserInfoValue(1L, Role.ROLE_SCRIBE);
         Source source = createSource("src name", "desc", Classification.OTHER, Type.OTHER, Period.OTHER);
 
-        mvc.perform(delete("/api/library/source/" + source.getId() + "/images/" + objectId1)
+        mvc.perform(delete("/source/" + source.getId() + "/images/" + objectId1)
                 .accept(APPLICATION_JSON_VALUE)
                 .contentType(APPLICATION_JSON_VALUE)
                 .header(USER_INFO_HEADER, userInfoValue)
