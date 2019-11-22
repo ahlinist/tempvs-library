@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.2.0.RELEASE'
+		springBootVersion = '2.2.1.RELEASE'
 	}
 	repositories {
 		mavenCentral()
@@ -56,14 +56,14 @@ repositories {
 }
 
 ext {
-	set('springCloudVersion', 'Hoxton.RC1')
+	set('springCloudVersion', 'Hoxton.RC2')
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 	implementation 'org.springframework.cloud:spring-cloud-starter-stream-rabbit'
 	implementation 'org.springframework.cloud:spring-cloud-stream-binder-rabbit'
 	//database

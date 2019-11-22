@@ -7,16 +7,12 @@ import club.tempvs.library.domain.Source;
 import club.tempvs.library.dto.UserInfoDto;
 import club.tempvs.library.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.cloud.netflix.ribbon.StaticServerList;
-import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,10 +29,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
+@ActiveProfiles("test")
+@RunWith(SpringRunner.class)
 public class SourceControllerIntegrationTest {
 
     private static final String USER_INFO_HEADER = "User-Info";
@@ -284,14 +281,5 @@ public class SourceControllerIntegrationTest {
         source.setType(type);
         source.setPeriod(period);
         return sourceRepository.save(source);
-    }
-
-    @TestConfiguration
-    public static class LocalRibbonClientConfiguration {
-
-        @Bean
-        public ServerList<Server> ribbonServerList() {
-            return new StaticServerList<>(new Server("localhost", 8910));
-        }
     }
 }
